@@ -36,28 +36,18 @@ bool sq_valid(int** total, int row, int collum,int num, int tam ){
 	aux=sqrt(tam); 
 
 	// Define a posição do elemento no canto superior esquerdo do subquadrado
-	for(i=1;i<=aux;i++) 
+	for(i=0;i<aux;i++) 
 	{
-		if((row/aux)<i){
-			if ((aux*i)==0)
-			{
-				aux_row=0;
-				break;
-			}
-			aux_row=aux*i-1;
+		if((row/aux)<i+1){
+			aux_row=aux*i;
 			break;
 		}
 	}
 
 	for(i=1;i<=aux;i++) 
 	{
-		if((collum/aux)<i){
-			if ((aux*i)==0)
-			{
-				aux_col=0;
-				break;
-			}
-			aux_col=aux*i-1;
+		if((collum/aux)<i+1){
+			aux_col=aux*i;
 			break;
 		}
 	}
