@@ -38,7 +38,12 @@ bool sq_valid(int** total, int row, int collum,int num, int tam ){
 	// Define a posição do elemento no canto superior esquerdo do subquadrado
 	for(i=1;i<=aux;i++) 
 	{
-		if(row<aux*i){
+		if((row/aux)<i){
+			if ((aux*i)==0)
+			{
+				aux_row=0;
+				break;
+			}
 			aux_row=aux*i-1;
 			break;
 		}
@@ -46,7 +51,12 @@ bool sq_valid(int** total, int row, int collum,int num, int tam ){
 
 	for(i=1;i<=aux;i++) 
 	{
-		if(row<aux*i){
+		if((collum/aux)<i){
+			if ((aux*i)==0)
+			{
+				aux_col=0;
+				break;
+			}
 			aux_col=aux*i-1;
 			break;
 		}
