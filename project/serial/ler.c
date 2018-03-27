@@ -2,17 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <omp.h>
 #include "verify.h"
 
-
-bool checkValid(int **puzzle,int i,int j,int value, int size);
+void bactrack(int **puzzle, int *attempt, int *backtracks, int size);
+int checkValid(int **puzzle,int i,int j,int value, int size);
 
 int main(int argc, char **argv){
     int size,i,j;
 	char *file;
 	int val;
-    int **matrix;
     int attempt=0, backtracks=0;
 	FILE *stream;
 	
@@ -33,7 +31,7 @@ int main(int argc, char **argv){
 	}
 	fscanf(stream, "%d", &size); 
 	
-	**matrix = (int **)malloc(size * size * sizeof(int *));
+	int **matrix = (int **)malloc(size * size * sizeof(int *));
 	for(i = 0; i < size * size; i++) matrix[i] = (int *)malloc(size * size * sizeof(int));
 	for (i = 0; i < size * size; i++){
 		for(j = 0; j < size * size; j++) {
@@ -133,7 +131,7 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                 temp=puzzle[i][j]+1;
                 for(k=temp;k<size;k++)
                 {
-                    if(checkValid(puzzle, i, j, k+1)==1)
+                    if(checkValid(puzzle, i, j, k+1,size)==1)
                     {
                         found=1;
                         puzzle[i][j]=k+1;
@@ -147,15 +145,15 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
     }
 }
 
-bool checkValid(int **puzzle,int i,int j,int value,int size){
-    bool a,b,c;
+int checkValid(int **puzzle,int i,int j,int value,int size){
+    int a,b,c;
     a = row_valid(puzzle,i,value,size);
-    b = collum_valid(puzzle,j,value,size);)
+    b = collum_valid(puzzle,j,value,size);
     c = sq_valid(puzzle, i, j,value, size );
     if(a && b && c){
-        return true;
+        return 1;
     }
     
     
-    return false;
+    return 0;
 }

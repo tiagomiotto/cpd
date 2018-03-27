@@ -4,32 +4,27 @@
 
 
 
-bool row_valid(int** total,int row, int num,int tam);
-bool collum_valid(int** total,int collum, int num,int tam);
-bool sq_valid(int** total, int row, int collum,int num, int tam );
-bool is_valid(int** total, int row, int collum,int num, int tam );
-void print(); 
 
-bool row_valid(int** total,int row, int num,int tam){
+int row_valid(int** total,int row, int num,int tam){
 
 	int i;
 	for (i = 0; i < tam; ++i)
 	{
-		if(total[row][i]==num) return false;
+		if(total[row][i]==num) return 0;
 	}
-	return true;
+	return 1;
 }
-bool collum_valid(int** total,int collum, int num, int tam){
+int collum_valid(int** total,int collum, int num, int tam){
 
 	int i;
 	for (i = 0; i < tam; ++i)
 	{
-		if(total[i][collum]==num) return false;
+		if(total[i][collum]==num) return 0;
 	}
-	return true;
+	return 1;
 }
 //https://cboard.cprogramming.com/c-programming/150917-how-check-square-block-condition-sudoku-its-validity.html
-bool sq_valid(int** total, int row, int collum,int num, int tam ){
+int sq_valid(int** total, int row, int collum,int num, int tam ){
 	int i,j,aux_col,aux_row;
 	double aux;
 	//Calcula o tamanho do  quadrado pequeno
@@ -56,15 +51,15 @@ bool sq_valid(int** total, int row, int collum,int num, int tam ){
 	//Verifica o subquadrado
 	for(i = aux_row; i < aux_row+aux; i++)
        for(j = aux_col; j < aux_col+aux; j++)
-            if(total[i][j]==num)    return false;
+            if(total[i][j]==num)    return 0;
 
-   return true;
+   return 1;
 
 }
 bool is_valid(int** total, int num, int row, int collum,int tam ){
 	//Paralelizar essas 3
-	if((row_valid(total,row,num,tam))==false) return false;  
-	if((collum_valid(total,collum,num,tam))==false) return false;  
-	if((sq_valid(total,row,collum,num,tam))==false) return false;  
-	return true;
+	if((row_valid(total,row,num,tam))==false) return 0;  
+	if((collum_valid(total,collum,num,tam))==false) return 0;
+	if((sq_valid(total,row,collum,num,tam))==false) return 0;
+	return 1;
 }
