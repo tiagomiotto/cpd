@@ -12,6 +12,7 @@ int main(int argc, char **argv){
     int size,i,j;
 	char *file;
 	int val;
+    int attempt=0, backtracks=0;
 	FILE *stream;
 	
 	if(argc != 2){ 
@@ -46,7 +47,16 @@ int main(int argc, char **argv){
 		}
 		printf("\n");
 	}
+    
+    bactrack(matrix, &attempt, &backtracks, size);
 	
+    for (i = 0; i < size * size; i++){
+        for(j = 0; j < size * size; j++) {
+            printf("%d ",matrix[i][j]);
+        }
+        printf("\n");
+    }
+    
 }
 
 
