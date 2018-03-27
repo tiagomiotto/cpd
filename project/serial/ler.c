@@ -67,14 +67,14 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
     
     
     int i, j, k, found=0, temp=0;
-    int a, b, row, collum;
+    int a, b;
     
 
-    
+    //allocate a matrix
     int **stable = (int **)malloc(size * size * sizeof(int *));
     for(i = 0; i < size * size; i++) stable[i] = (int *)malloc(size * size * sizeof(int));
     
-    
+    //Check what values are lock
     for(i=0;i<size;i++)
     {
         for(j=0;j<size;j++)
@@ -88,85 +88,102 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
     
     
 
-    //printf("1\n");
+    //Move vertically
     
     for(i=0;i<size;i++)
     {
-        //printf("2\n");
+        //Move side ways
         for(j=0;j<size;j++)
         {
-            //printf("3\n");
-            for(k=0;k<size;k++)
-            {
-                //printf("4\n");
-                if(is_valid(puzzle,k+1, i, j, size)==1 && stable[i][j]==0)
-                {
-                    puzzle[i][j]=k+1;
-                    break;
-                }
-                if(k==size-1)
-                    break;
-            }
             
-            while(puzzle[i][j]==0)
-            {
-                //printf("5\n");
-                found=0;
-                temp=j-1;
-                //printf("temp1=%d\n",temp);
-                if(temp!=-1){
-                    for(j=temp;j>=0;j--)
-                    {
-                        //printf("6\n");
-                        if(stable[i][j]==0)
-                        {
-                            found=1;
-                            break;
-                        }
-                    }
-                }
-                temp=i-1;
-                
-                if(found==0)
+                //Increment values until finds a valid bvalue
+                for(k=0;k<size;k++)
                 {
-                    //printf("temp2=%d\n",temp);
-                    if(temp!=-1){
-                        
-                        for(i=temp;i>=0;i--)
-                        {
-                            //printf("7\n");
-                            
-                            for(j=size-1;j>=0;j--)
-                            {
-                                //printf("8\n");
-                                if(stable[i][j]==0)
-                                {
-                                    found=1;
-                                    break;
-                                }
-                            }
-                            if(found==1)
-                                break;
-                        }
-                    }
-                }
-                
-                found=0;
-                temp=puzzle[i][j]+1;
-                
-                for(k=temp;k<size;k++)
-                {
-                    //printf("9\n");
-                    if(is_valid(puzzle, k+1,i, j,size)==1 && stable[i][j]==0)
+                    //Check for valid values
+                    if(is_valid(puzzle,k+1, i, j, size)==1 && stable[i][j]==0)
                     {
-                        found=1;
+                        //Set value on the puzzle
                         puzzle[i][j]=k+1;
                         break;
                     }
+                    //Desnecessary
+                    if(k==size-1)
+                        break;
                 }
-                if(found==0)
-                    puzzle[i][j]=0;
-            }
+            
+                while(puzzle[i][j]==0)
+                {
+                    //No valid options found
+                    found=0;
+                    //Go back in the row
+                    temp=j-1;
+                    //Keep inside of the matrix
+                    if(temp!=-1){
+                        
+                        //Go back until a value that can be change is found
+                        for(j=temp;j>=0;j--)
+                        {
+                            //Check if the value can be change
+                            if(stable[i][j]==0)
+                            {
+                                //Flag that found a value and stop going backwards
+                                found=1;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    
+                    
+                    if(found==0)
+                    {
+                        //If there isnt a value to be change in the row go back one collum
+                        temp=i-1;
+                        //Keep incide the bounderies
+                        if(temp!=-1){
+                            //Move back on the collums untils finds value to be change
+                            for(i=temp;i>=0;i--)
+                            {
+                                
+                                //starting on the right find a value to be change
+                                for(j=size-1;j>=0;j--)
+                                {
+                                    //if value can be change flag and stop moving on the sideways
+                                    if(stable[i][j]==0)
+                                    {
+                                        found=1;
+                                        break;
+                                    }
+                                }
+                                //value was found stop moving vertically
+                                if(found==1)
+                                    break;
+                            }
+                        }
+                    }
+                    
+                    //Reset flag
+                    found=0;
+                    //set the last value
+                    temp=puzzle[i][j];
+                    
+                    //Go up on the possible values
+                    for(k=temp;k<size;k++)
+                    {
+                        //Check if the value is valid
+                        if(is_valid(puzzle, k+1,i, j,size)==1 && stable[i][j]==0)
+                        {
+                            //If it is value, update and set flag
+                            found=1;
+                            puzzle[i][j]=k+1;
+                            break;
+                        }
+                    }
+                    //if no valid value was found set to zero and continue moving back
+                    if(found==0)
+                        puzzle[i][j]=0;
+                }
+            //}
         }
         
         for (a = 0; a < size; a++){
