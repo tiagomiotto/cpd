@@ -56,6 +56,7 @@ int main(int argc, char **argv){
         printf("\n");
     }
     printf("\n");
+    printf("Backtracks:%d and %d Attempts",backtracks,attempt);
     
 }
 
