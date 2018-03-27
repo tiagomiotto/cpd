@@ -12,6 +12,7 @@ int main(int argc, char **argv){
     int size,i,j;
 	char *file;
 	int val;
+    int **matrix;
     int attempt=0, backtracks=0;
 	FILE *stream;
 	
@@ -32,7 +33,7 @@ int main(int argc, char **argv){
 	}
 	fscanf(stream, "%d", &size); 
 	
-	int **matrix = (int **)malloc(size * size * sizeof(int *));
+	**matrix = (int **)malloc(size * size * sizeof(int *));
 	for(i = 0; i < size * size; i++) matrix[i] = (int *)malloc(size * size * sizeof(int));
 	for (i = 0; i < size * size; i++){
 		for(j = 0; j < size * size; j++) {
