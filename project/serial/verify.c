@@ -39,7 +39,7 @@ int sq_valid(int** total, int row, int collum,int num, int tam ){
 		}
 	}
 
-	for(i=1;i<aux;i++) 
+	for(i=0;i<aux;i++)
 	{
 		if((collum/aux)<i+1){
 			aux_col=aux*i;

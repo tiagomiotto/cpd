@@ -5,7 +5,6 @@
 #include "verify.h"
 
 void bactrack(int **puzzle, int *attempt, int *backtracks, int size);
-int checkValid(int **puzzle,int i,int j,int value, int size);
 
 int main(int argc, char **argv){
     int size,i,j;
@@ -71,8 +70,8 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
     
 
     //allocate a matrix
-    int **stable = (int **)malloc(size * size * sizeof(int *));
-    for(i = 0; i < size * size; i++) stable[i] = (int *)malloc(size * size * sizeof(int));
+    int **stable = (int **)malloc(size * sizeof(int *));
+    for(i = 0; i < size; i++) stable[i] = (int *)malloc(size * sizeof(int));
     
     //Check what values are lock
     for(i=0;i<size;i++)
@@ -86,6 +85,13 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
         }
     }
     
+    for (a = 0; a < size; a++){
+        for(b = 0; b < size; b++) {
+            printf("%d ",stable[a][b]);
+        }
+        printf("\n");
+    }
+    printf("\n");
     
 
     //Move vertically
@@ -97,7 +103,7 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
         {
             
                 //Increment values until finds a valid bvalue
-                for(k=0;k<size;k++)
+                for(k=puzzle[i][j];k<size;k++)
                 {
                     //Check for valid values
                     if(is_valid(puzzle,k+1, i, j, size)==1 && stable[i][j]==0)
@@ -168,7 +174,7 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                     temp=puzzle[i][j];
                     
                     //Go up on the possible values
-                    for(k=temp;k<size;k++)
+                    for(k=puzzle[i][j];k<size;k++)
                     {
                         //Check if the value is valid
                         if(is_valid(puzzle, k+1,i, j,size)==1 && stable[i][j]==0)
@@ -180,8 +186,10 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                         }
                     }
                     //if no valid value was found set to zero and continue moving back
-                    if(found==0)
+                    if(found==0){
                         puzzle[i][j]=0;
+                        continue;
+                    }
                 }
             //}
         }
@@ -196,15 +204,3 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
     }
 }
 
-int checkValid(int **puzzle,int i,int j,int value,int size){
-    int a,b,c;
-    a = row_valid(puzzle,j,value,size);
-    b = collum_valid(puzzle,i,value,size);
-    c = sq_valid(puzzle, j, i,value, size );
-    if(a && b && c){
-        return 1;
-    }
-    
-    
-    return 0;
-}
