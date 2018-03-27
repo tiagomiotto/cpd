@@ -46,6 +46,7 @@ int main(int argc, char **argv){
 		}
 		printf("\n");
 	}
+    printf("\n");
     
     bactrack(matrix, &attempt, &backtracks, size*size);
 	
@@ -55,6 +56,7 @@ int main(int argc, char **argv){
         }
         printf("\n");
     }
+    printf("\n");
     
 }
 
@@ -65,6 +67,7 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
     
     
     int i, j, k, found=0, temp=0;
+    int a, b, row, collum;
     
 
     
@@ -82,6 +85,9 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                 stable[i][j]=1;
         }
     }
+    
+    
+
     //printf("1\n");
     
     for(i=0;i<size;i++)
@@ -93,7 +99,7 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
             for(k=0;k<size;k++)
             {
                 //printf("4\n");
-                if(checkValid(puzzle, i, j, k+1, size)==1)
+                if(is_valid(puzzle,k+1, i, j, size)==1 && stable[i][j]==0)
                 {
                     puzzle[i][j]=k+1;
                     break;
@@ -125,6 +131,7 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                 {
                     //printf("temp2=%d\n",temp);
                     if(temp!=-1){
+                        
                         for(i=temp;i>=0;i--)
                         {
                             //printf("7\n");
@@ -150,7 +157,7 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                 for(k=temp;k<size;k++)
                 {
                     //printf("9\n");
-                    if(checkValid(puzzle, i, j, k+1,size)==1)
+                    if(is_valid(puzzle, k+1,i, j,size)==1 && stable[i][j]==0)
                     {
                         found=1;
                         puzzle[i][j]=k+1;
@@ -161,14 +168,22 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                     puzzle[i][j]=0;
             }
         }
+        
+        for (a = 0; a < size; a++){
+            for(b = 0; b < size; b++) {
+                printf("%d ",puzzle[a][b]);
+            }
+            printf("\n");
+        }
+        printf("\n");
     }
 }
 
 int checkValid(int **puzzle,int i,int j,int value,int size){
     int a,b,c;
-    a = row_valid(puzzle,i,value,size);
-    b = collum_valid(puzzle,j,value,size);
-    c = sq_valid(puzzle, i, j,value, size );
+    a = row_valid(puzzle,j,value,size);
+    b = collum_valid(puzzle,i,value,size);
+    c = sq_valid(puzzle, j, i,value, size );
     if(a && b && c){
         return 1;
     }
