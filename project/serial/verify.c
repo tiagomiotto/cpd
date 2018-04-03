@@ -31,22 +31,24 @@ int find_position(int tam, int my_row, int my_collum, int indice, int *next_row,
 		}
 	}
 
-
+	aux_row=my_row;
+	aux_col=my_collum;
 	//Checks Square
-	aux_row=my_row-(my_row) % aux; //sets edges
+	aux_row=aux_row-(aux_row) % aux; //sets edges
 	j=1;
-	for(i=0;i<(indice-(2*tam-1));i++){ //Descobre qual row esta o indice
-		if(i>=aux*j){
+	for(i=0;i<(indice-(2*tam-3));i++){ //Descobre qual row esta o indice
+		if(i==((aux-1)*j)){
 			aux_row++;
 			j++;
 		}
-		if(i==my_row%aux){ //Não sei se isso vai funcionar
+		if(aux_row==my_row){ //Não sei se isso vai funcionar
 			aux_row++;
 		}
 	}
-	aux_col= my_collum-(my_collum) % aux; //sets edges
-	aux_col= aux_col + i%aux; //descobre a coluna do indice 
-	if(aux_col>= my_collum%aux){ //tambem nao sei se isso vai funcionar
+
+	aux_col= aux_col-(aux_col % aux); //sets edge
+	aux_col= aux_col + i%(aux-1); //descobre a coluna do indice 
+	if(aux_col>= my_collum){ //tambem nao sei se isso vai funcionar
 			aux_col++;
 	}
 	*next_row=aux_row;
@@ -82,7 +84,7 @@ bool is_valid(int** total, int num, int row, int collum,int tam ){
             find_position(tam, row, collum, indice, &next_row, &next_collum);
             
             if (total[next_row][next_collum]==num) {test[omp_get_thread_num()]=0;}else{test[omp_get_thread_num()]=1;}
-            if (row==0) printf("%d ( %d, %d) ind %d (%d , %d )\n",omp_get_thread_num(),row,collum,indice,next_row,next_collum);
+            if (row==8) printf("%d ( %d, %d) ind %d (%d , %d )\n",omp_get_thread_num(),row,collum,indice,next_row,next_collum);
         }
          
         for (j=0; j<Nthreads;j++){
