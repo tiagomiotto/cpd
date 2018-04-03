@@ -2,15 +2,20 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <omp.h>
 #include "verify.h"
 
-void bactrack(int **puzzle, int *attempt, int *backtracks, int size);
+int bactrack(int **puzzle, int *attempt, int *backtracks, int size);
 
 int main(int argc, char **argv){
     int size,i,j;
 	char *file;
 	int val;
     int attempt=0, backtracks=0;
+    double start_time, end_time;
+    
+    start_time = omp_get_wtime();
+    
 	FILE *stream;
 	
 	if(argc != 2){ 
@@ -39,15 +44,15 @@ int main(int argc, char **argv){
 		}
 	}
 	
-	for (i = 0; i < size * size; i++){
-		for(j = 0; j < size * size; j++) {
-			printf("%d ",matrix[i][j]);
-		}
-		printf("\n");
-	}
-    printf("\n");
+// 	for (i = 0; i < size * size; i++){
+// 		for(j = 0; j < size * size; j++) {
+// 			printf("%d ",matrix[i][j]);
+// 		}
+// 		printf("\n");
+// 	}
+//     printf("\n");
     
-    bactrack(matrix, &attempt, &backtracks, size*size);
+    if (bactrack(matrix, &attempt, &backtracks, size*size)==-1) return -1;
 	
     for (i = 0; i < size * size; i++){
         for(j = 0; j < size * size; j++) {
@@ -56,13 +61,14 @@ int main(int argc, char **argv){
         printf("\n");
     }
     printf("\n");
-    printf("Backtracks:%d and %d Attempts",backtracks,attempt);
+    end_time = omp_get_wtime();
+    printf("Backtracks:%d and %d Attempts\n Time:%f\n",backtracks,attempt,end_time-start_time);
     
 }
 
 
 
-void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
+int bactrack(int **puzzle, int *attempt, int *backtracks, int size)
 {
     
     
@@ -86,13 +92,13 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
         }
     }
     
-    for (a = 0; a < size; a++){
-        for(b = 0; b < size; b++) {
-            printf("%d ",stable[a][b]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+//     for (a = 0; a < size; a++){
+//         for(b = 0; b < size; b++) {
+//             printf("%d ",stable[a][b]);
+//         }
+//         printf("\n");
+//     }
+//     printf("\n");
     
 
     //Move vertically
@@ -166,6 +172,9 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                                 if(found==1)
                                     break;
                             }
+                        } else {
+                            printf("this puzzle has no solution\n");
+                            return -1;  
                         }
                     }
                     
@@ -195,13 +204,14 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
             //}
         }
         
-        for (a = 0; a < size; a++){
-            for(b = 0; b < size; b++) {
-                printf("%d ",puzzle[a][b]);
-            }
-            printf("\n");
-        }
-        printf("\n");
+//         for (a = 0; a < size; a++){
+//             for(b = 0; b < size; b++) {
+//                 printf("%d ",puzzle[a][b]);
+//             }
+//             printf("\n");
+//         }
+//         printf("\n");
     }
+    return 0;
 }
 
