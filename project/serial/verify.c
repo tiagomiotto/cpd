@@ -12,50 +12,49 @@ int find_position(int tam, int my_row, int my_collum, int indice, int *next_row,
 	if(indice<tam-1){ //Check if it's in my row
 
 		if(indice>=my_collum) aux_indice++;
-		if(!(aux_indice>tam-2));
+		if(!(aux_indice>tam-2)){
 			*next_collum=aux_indice;
 			*next_row=my_row;
-			return 0;
+			return 0;}
 		}
-	}
+	
 	aux_indice=indice;
 
-	if(indice<(2*tam-2){ //Check if it's in my collum
+	if(indice<(2*tam-2)){ //Check if it's in my collum
 
-		if((indice-(total-2))>=my_row) aux_indice++;
+		if((indice-(tam-2))>=my_row) aux_indice++;
 		if(!(aux_indice>(2*tam-2))){
 			*next_collum=my_collum;
 			*next_row=aux_indice-tam+1;
 			return 0;
 		}
 	}
-	aux_indice;
-	/*Check if it's in the square*/
 
-	for(i=0;i<aux;i++) //Queria fazer isso sem for
-	{
-		if((my_row/aux)<i+1){
-			aux_row=aux*i;
-			break;
+
+	//Checks Square
+	aux_row=my_row-(my_row) % aux; //sets edges
+	j=1;
+	for(i=0;i<(indice-(2*tam-1));i++){ //Descobre qual row esta o indice
+		if(i>=aux*j){
+			aux_row++;
+			j++;
+		}
+		if(i==my_row%aux){ //Não sei se isso vai funcionar
+			aux_row++;
 		}
 	}
-
-	for(i=0;i<aux;i++)
-	{
-		if((my_collum/aux)<i+1){
-			aux_col=aux*i;
-			break;
-		}
+	aux_col= my_collum-(my_collum) % aux; //sets edges
+	aux_col= aux_col + i%aux; //descobre a coluna do indice 
+	if(aux_col>= my_collum%aux){ //tambem nao sei se isso vai funcionar
+			aux_col++;
 	}
-	/*O numero de checks tem que ser igual a (n-1)*(n-1) onde n*n é a área do subquadrado*/
-	if(indice<(aux-1)*(aux-1)){
 
-	}
-	else {
-			printf("Indice fora do intervalo\n");
-			return -1;
-		}
+	*next_row=aux_row;
+	*next_collum=aux_col;
 
+
+//Não sei se a funcção que pula a linha e a coluna vai funcionar, se não, aumentamos os indices para conter
+//o quadrado todo e verificamos o quadrado todo
 
 }
 bool is_valid_paralel(){
