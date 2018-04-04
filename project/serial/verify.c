@@ -79,12 +79,12 @@ bool is_valid(int** total, int num, int row, int collum,int tam ){
     int i,indice,next_row,next_collum,Nthreads,ite,j,flag,sai,initial,final;
     Nthreads = 8;
     omp_set_num_threads(Nthreads);
-    int test[Nthreads];
+//     int test[Nthreads];
     sai=0;
     ite=((2*(tam-1)+tam-(2*sqrt(tam)-1)+Nthreads-1))/Nthreads;
-    for (j=0; j<Nthreads;j++){
-            test[j]=1;
-        }
+//     for (j=0; j<Nthreads;j++){
+//             test[j]=1;
+//         }
     for (i=0;i<ite;i++){
         initial=i*Nthreads;
         final=(i+1)*Nthreads;
@@ -94,18 +94,20 @@ bool is_valid(int** total, int num, int row, int collum,int tam ){
         for (indice=initial; indice<final;indice++){
             
             find_position(tam, row, collum, indice, &next_row, &next_collum);
-            test[omp_get_thread_num()]=1;
-            if (total[next_row][next_collum]==num) {test[omp_get_thread_num()]=0;}else{test[omp_get_thread_num()]=1;}
+//             test[omp_get_thread_num()]=1;
+            if (total[next_row][next_collum]==num) {
+                sai=1; //isto pode dar problema?????
+            }
 //             /*if (row==3 && collum==4)*/ printf("%d ( %d, %d) ind %d (%d , %d) val %d, %d , res %d\n",omp_get_thread_num(),row,collum,indice,next_row,next_collum,total[next_row][next_collum],num,test[omp_get_thread_num()]);
         }
          
-        for (j=0; j<Nthreads;j++){
-            if (test[j]==0) {sai=1;  break;}
-            test[j]=1;
-        }
-        if (sai==1) { break;}
+//         for (j=0; j<final-initial;j++){
+//             if (test[j]==0) {sai=1;  break;}
+//             test[j]=1;
+//         }
+        if (sai==1) { return 0;}
     }
-    if (sai==1) {/*if (row==3) printf("sai0\n");*/return 0;}
-    else{ /*if (row==3) printf("sai1\n");*/return 1;}
-    
+//     if (sai==1) {/*if (row==3) printf("sai0\n");*/return 0;}
+//     else{ /*if (row==3) printf("sai1\n");*/return 1;}
+    return 1;
 }
