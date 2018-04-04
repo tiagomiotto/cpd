@@ -44,13 +44,13 @@ int main(int argc, char **argv){
 		}
 	}
 	
-// 	for (i = 0; i < size * size; i++){
-// 		for(j = 0; j < size * size; j++) {
-// 			printf("%d ",matrix[i][j]);
-// 		}
-// 		printf("\n");
-// 	}
-//     printf("\n");
+	for (i = 0; i < size * size; i++){
+		for(j = 0; j < size * size; j++) {
+			printf("%d ",matrix[i][j]);
+		}
+		printf("\n");
+	}
+    printf("\n");
     
     if (bactrack(matrix, &attempt, &backtracks, size*size)==-1) return -1;
 	

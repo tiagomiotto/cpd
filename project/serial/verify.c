@@ -22,13 +22,23 @@ int find_position(int tam, int my_row, int my_collum, int indice, int *next_row,
 	aux_indice=indice;
 
 	if(indice<(2*tam-2)){ //Check if it's in my collum
-
-		if((indice-(tam-2))>=my_row) aux_indice++;
+                if((indice-(tam-1))>=my_row) aux_indice++;
 		if(!(aux_indice>(2*tam-2))){
 			*next_collum=my_collum;
 			*next_row=aux_indice-tam+1;
+//                         printf("ind %d (%d,%d)->(%d,%d)\n",indice,my_row,my_collum,*next_row,*next_collum);
 			return 0;
 		}
+                    
+                    
+                    
+                    
+// 		if((indice-(tam-2))>=my_row) aux_indice++;
+// 		if(!(aux_indice>(2*tam-2))){
+// 			*next_collum=my_collum;
+// 			*next_row=aux_indice-tam-1;
+// 			return 0;
+// 		}
 	}
 
 	aux_row=my_row;
@@ -72,19 +82,21 @@ bool is_valid(int** total, int num, int row, int collum,int tam ){
     int test[Nthreads];
     sai=0;
     ite=((2*(tam-1)+tam-(2*sqrt(tam)-1)+Nthreads-1))/Nthreads;
+    for (j=0; j<Nthreads;j++){
+            test[j]=1;
+        }
     for (i=0;i<ite;i++){
-       
         initial=i*Nthreads;
         final=(i+1)*Nthreads;
         if (final>(2*(tam-1)+tam-(2*sqrt(tam)-1))) final=(2*(tam-1)+tam-(2*sqrt(tam)-1));
-        if (row==0) printf("initial %d final %d\n",initial,final);
+//         if (row==3) printf("initial %d final %d\n",initial,final);
         #pragma omp parallel for private(next_row,next_collum)
         for (indice=initial; indice<final;indice++){
-
-            find_position(tam, row, collum, indice, &next_row, &next_collum);
             
+            find_position(tam, row, collum, indice, &next_row, &next_collum);
+            test[omp_get_thread_num()]=1;
             if (total[next_row][next_collum]==num) {test[omp_get_thread_num()]=0;}else{test[omp_get_thread_num()]=1;}
-            if (row==8) printf("%d ( %d, %d) ind %d (%d , %d )\n",omp_get_thread_num(),row,collum,indice,next_row,next_collum);
+//             /*if (row==3 && collum==4)*/ printf("%d ( %d, %d) ind %d (%d , %d) val %d, %d , res %d\n",omp_get_thread_num(),row,collum,indice,next_row,next_collum,total[next_row][next_collum],num,test[omp_get_thread_num()]);
         }
          
         for (j=0; j<Nthreads;j++){
@@ -93,7 +105,7 @@ bool is_valid(int** total, int num, int row, int collum,int tam ){
         }
         if (sai==1) { break;}
     }
-    if (sai==1) {if (row==0) printf("sai0\n");return 0;}
-    else{ if (row==0) printf("sai1\n");return 1;}
+    if (sai==1) {/*if (row==3) printf("sai0\n");*/return 0;}
+    else{ /*if (row==3) printf("sai1\n");*/return 1;}
     
 }
