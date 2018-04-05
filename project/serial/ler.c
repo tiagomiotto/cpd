@@ -5,6 +5,7 @@
 #include <omp.h>
 #include "verify.h"
 
+
 int bactrack(int **puzzle, int *attempt, int *backtracks, int size);
 
 int main(int argc, char **argv){
@@ -63,6 +64,7 @@ int main(int argc, char **argv){
     printf("\n");
     end_time = omp_get_wtime();
     printf("Backtracks:%d and %d Attempts\n Time:%f\n",backtracks,attempt,end_time-start_time);
+   
     
 }
 
@@ -117,6 +119,8 @@ int bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                     {
                         //Set value on the puzzle
                         puzzle[i][j]=k+1;
+                        //if que ve quantas threads estão disponiveis
+                        
                         break;
                     }
                     //Desnecessary

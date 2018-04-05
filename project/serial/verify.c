@@ -55,7 +55,7 @@ int find_position(int tam, int my_row, int my_collum, int indice, int *next_row,
 			aux_row++;
 		}
 	}
-
+	
 	aux_col= aux_col-(aux_col % aux); //sets edge
 	aux_col= aux_col + i%(aux-1); //descobre a coluna do indice 
 	if(aux_col>= my_collum){ //tambem nao sei se isso vai funcionar
@@ -71,8 +71,8 @@ int find_position(int tam, int my_row, int my_collum, int indice, int *next_row,
 }
 bool is_valid(int** total, int num, int row, int collum,int tam ){
 	//for(cria intervalos consoante ao numero de threads)
-		//for(usa a funcao find position e verifica se o numero existe) ---Esse é paralelizado
-		//se encontrar o numero, da break no for de cima e já retorna, evitando fazer mais calculos
+	//for(usa a funcao find position e verifica se o numero existe) ---Esse é paralelizado
+	//se encontrar o numero, da break no for de cima e já retorna, evitando fazer mais calculos
 	//como esse é um codigo serial, vai ter só 1 thread, logo o for de cima cria intervalos 1 a 1
 	//e o de baixo verifica de 1 a 1
 	//Porque precisamos que o algoritmo seja o mesmo
@@ -85,15 +85,18 @@ bool is_valid(int** total, int num, int row, int collum,int tam ){
 //     for (j=0; j<Nthreads;j++){
 //             test[j]=1;
 //         }
+ #pragma omp parallel
     for (i=0;i<ite;i++){
-        initial=i*Nthreads;
+		#pragma omp single
+        {initial=i*Nthreads;
         final=(i+1)*Nthreads;
-        if (final>(2*(tam-1)+tam-(2*sqrt(tam)-1))) final=(2*(tam-1)+tam-(2*sqrt(tam)-1));
+        if (final>(2*(tam-1)+tam-(2*sqrt(tam)-1))) final=(2*(tam-1)+tam-(2*sqrt(tam)-1));}
 //         if (row==3) printf("initial %d final %d\n",initial,final);
-        #pragma omp parallel for private(next_row,next_collum)
+        #pragma for private(next_row,next_collum)
         for (indice=initial; indice<final;indice++){
             
             find_position(tam, row, collum, indice, &next_row, &next_collum);
+            //printf("Number of threads %d\n", omp_get_num_threads() );
 //             test[omp_get_thread_num()]=1;
             if (total[next_row][next_collum]==num) {
                 sai=1; //isto pode dar problema?????
@@ -105,9 +108,10 @@ bool is_valid(int** total, int num, int row, int collum,int tam ){
 //             if (test[j]==0) {sai=1;  break;}
 //             test[j]=1;
 //         }
-        if (sai==1) { return 0;}
+	
+        if (sai==1) {break;}
     }
-//     if (sai==1) {/*if (row==3) printf("sai0\n");*/return 0;}
-//     else{ /*if (row==3) printf("sai1\n");*/return 1;}
+    if (sai==1) {/*if (row==3) printf("sai0\n");*/return 0;}
+    else{ /*if (row==3) printf("sai1\n");*/return 1;}
     return 1;
 }
