@@ -4,7 +4,7 @@
 #include <errno.h>
 #include "verify.h"
 
-void bactrack(int **puzzle, int *attempt, int *backtracks, int size);
+int bactrack(int **puzzle, int *attempt, int *backtracks, int size);
 
 int main(int argc, char **argv){
     int size,i,j;
@@ -47,8 +47,10 @@ int main(int argc, char **argv){
 	}
     printf("\n");
     
-    bactrack(matrix, &attempt, &backtracks, size*size);
-	
+    if(bactrack(matrix, &attempt, &backtracks, size*size)==-1){
+        return -1;
+    }
+
     for (i = 0; i < size * size; i++){
         for(j = 0; j < size * size; j++) {
             printf("%d ",matrix[i][j]);
@@ -62,7 +64,7 @@ int main(int argc, char **argv){
 
 
 
-void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
+int bactrack(int **puzzle, int *attempt, int *backtracks, int size)
 {
     
     
@@ -85,20 +87,15 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                 stable[i][j]=1;
         }
     }
-    
-    for (a = 0; a < size; a++){
-        for(b = 0; b < size; b++) {
-            printf("%d ",stable[a][b]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+ 
     
 
     //Move vertically
     
     for(i=0;i<size;i++)
     {
+        
+        
         //Move side ways
         for(j=0;j<size;j++)
         {
@@ -166,6 +163,9 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
                                 if(found==1)
                                     break;
                             }
+                        } else {
+                            printf("This puzzle has no solution!!\n");
+                            return -1;
                         }
                     }
                     
@@ -195,13 +195,7 @@ void bactrack(int **puzzle, int *attempt, int *backtracks, int size)
             //}
         }
         
-        for (a = 0; a < size; a++){
-            for(b = 0; b < size; b++) {
-                printf("%d ",puzzle[a][b]);
-            }
-            printf("\n");
-        }
-        printf("\n");
     }
+    return 0;
 }
 
