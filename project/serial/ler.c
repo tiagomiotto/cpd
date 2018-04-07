@@ -121,7 +121,7 @@ int bactrack(int **puzzle, int size)
                                     {   
                                         #pragma omp section 
                                         {
-                                        printf("nova thread %d\n",omp_get_thread_num());
+//                                         printf("nova thread %d\n",omp_get_thread_num());
                                         sai=1;
                                         if(mythread!=omp_get_thread_num()){ 
                                             int i1,i2,i3;
@@ -136,19 +136,20 @@ int bactrack(int **puzzle, int size)
                                             }
                                             matrix [i][j]=k+1;
                                             if(bactrack(matrix, size)==-1){
-                                                printf("thread %d e deu mal (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
+//                                                 printf("thread %d e deu mal (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
                                             }else{
-                                                printf("thread %d e deu bem (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
+//                                                 printf("thread %d e deu bem (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
                                                 for(i2 = 0; i2 < size ; i2++){
                                                     for(i3 = 0; i3 < size ; i3++){
                                                         printf("%d ",matrix [i2][i3]);
                                                 } 
                                                 printf("\n");
                                                 }
+                                                printf("\n");
                                             }
                                         }
                                         sai=0;
-                                        printf("morre thread %d\n",omp_get_thread_num());
+//                                         printf("morre thread %d\n",omp_get_thread_num());
                                         }
                                     }
                                     break;
@@ -220,6 +221,8 @@ int bactrack(int **puzzle, int size)
                     //Reset flag
                     found=0;
                     //set the last value
+                    if(i<0)i=0;
+                    if(j<0)j=0;
                     temp=puzzle[i][j];
                     
                     //Go up on the possible values
