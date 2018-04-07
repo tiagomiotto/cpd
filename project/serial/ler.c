@@ -5,19 +5,17 @@
 #include <omp.h>
 #include "verify.h"
 
-int bactrack(int **puzzle,  int size);
+int bactrack(int **puzzle, int size);
 
 int main(int argc, char **argv){
     int size,i,j,Nthreads;
 	char *file;
 	int val;
-    int attempt=0, backtracks=0;
-    
-    omp_set_nested;
-    Nthreads = 8;
-    omp_set_num_threads(Nthreads);
 	FILE *stream;
-	
+        omp_set_nested;
+        Nthreads = 8;
+        omp_set_num_threads(Nthreads);
+        
 	if(argc != 2){ 
 		printf("erro nos argumentos\n");
 		exit(1);
@@ -63,7 +61,6 @@ int main(int argc, char **argv){
         printf("\n");
     }
     printf("\n");
-    printf("Backtracks:%d and %d Attempts\n",backtracks,attempt);
     
 }
 
@@ -73,17 +70,13 @@ int bactrack(int **puzzle, int size)
 {
     
     
-    int i, j, k, found=0, temp=0;
+    int i, j, k,k1, found=0, temp=0, mythread,fim,sai=0;
     int a, b;
     
 
     //allocate a matrix
     int **stable = (int **)malloc(size * sizeof(int *));
     for(i = 0; i < size; i++) stable[i] = (int *)malloc(size * sizeof(int));
-    
-//     printf("%d %d\n\n",omp_get_num_threads(),omp_get_max_threads());
-    
-    
     
     //Check what values are lock
     for(i=0;i<size;i++)
@@ -98,7 +91,8 @@ int bactrack(int **puzzle, int size)
     }
  
     
-
+    mythread=omp_get_thread_num();
+//     printf("sou o master %d\n",mythread);
     //Move vertically
     
     for(i=0;i<size;i++)
@@ -108,72 +102,68 @@ int bactrack(int **puzzle, int size)
         //Move side ways
         for(j=0;j<size;j++)
         {
-            
-                
-            if (stable[i][j]==0){
-                    //Increment values until finds a valid bvalue
-                
-//                     printf("olaaa\n");
-                    if (omp_get_num_threads()<omp_get_max_threads())
-                    {
-                        int i1,i2,i3,sai=0;
-                        int **matrix ;
-                        printf("threads novas! %d %d\n\n",omp_get_num_threads(),omp_get_max_threads());
-//                         #pragma omp parallel num_threads (-omp_get_num_threads()+omp_get_max_threads()+1)
-//                         {
-                    #pragma omp parallel for/* nowait*/private(matrix,i1,i2,i3) num_threads (-omp_get_num_threads()+omp_get_max_threads()+1)
-                        for(k=puzzle[i][j];k<size;k++)
-                        { 
-                            //Check for valid values
-                            matrix = (int **)malloc(size * size * sizeof(int *));
-                            for(int i1 = 0; i1 < size ; i1++) matrix[i1] = (int *)malloc(size * size * sizeof(int));
-                            
-                            for(i2 = 0; i2 < size ; i2++){
-                                for(i3 = 0; i3 < size ; i3++){
-                                    matrix [i2][i3]= puzzle[i2][i3];
-                            } 
-                            }
-                            
-                            if(is_valid(puzzle,k+1, i, j, size)==1)
-                            {
-                                matrix[i][j]=k+1;
-                                printf("eu sou %d %d %d e vou tentar o %d\n",omp_get_thread_num(),i ,j,k+1);
-                                if(bactrack(matrix, size)==-1){
-                                    printf("eu sou %d %d %d e nao deu certo o %d\n",omp_get_thread_num(),i ,j,k+1);
-                                }else{
-                                    printf("eu sou %d %d %d e deu certo o %d :D\n",omp_get_thread_num(),i ,j,k+1);
-                                    for(i2 = 0; i2 < size ; i2++){
-                                        for(i3 = 0; i3 < size ; i3++){
-                                            printf("%d ",matrix [i2][i3]);
-                                    } 
-                                    printf("\n");
-                                }
-                                printf("\n");
-                                sai=1;
-                                }
-                            }else{
-                                printf("eu sou %d %d %d e nao é valido o %d\n",omp_get_thread_num(),i ,j,k+1);
-                            }
-                            
-                        }
-//                         }
-                        if (sai==1){
-                            return 0;
-                        }
-                    }else{
+           if(stable[i][j]==0){
+                //Increment values until finds a valid bvalue
                 for(k=puzzle[i][j];k<size;k++)
+                {
+                    //Check for valid values
+                    if(is_valid(puzzle,k+1, i, j, size)==1)
                     {
-                        //Check for valid values                            
-                        if(is_valid(puzzle,k+1, i, j, size)==1)
-                        {
+                        puzzle[i][j]=k+1;
+//                         printf("threads %d,%d\n",omp_get_num_threads(),omp_get_max_threads());
+                        if (omp_get_num_threads()<omp_get_max_threads() && sai==0){
+                            
+                            for(k1=k+1;k1<size;k1++)
+                            {
+                                if(is_valid(puzzle,k1+1, i, j, size)==1){
+                                    puzzle[i][j]=k1+1;
+                                    #pragma omp parallel sections if (omp_get_num_threads()<omp_get_max_threads())
+                                    {   
+                                        #pragma omp section 
+                                        {
+                                        printf("nova thread %d\n",omp_get_thread_num());
+                                        sai=1;
+                                        if(mythread!=omp_get_thread_num()){ 
+                                            int i1,i2,i3;
+                                            int **matrix ;
+                                            matrix = (int **)malloc(size * size * sizeof(int *));
+                                            for(int i1 = 0; i1 < size ; i1++) matrix[i1] = (int *)malloc(size * size * sizeof(int));
+                                            
+                                            for(i2 = 0; i2 < size ; i2++){
+                                                for(i3 = 0; i3 < size ; i3++){
+                                                    matrix [i2][i3]= puzzle[i2][i3];
+                                                } 
+                                            }
+                                            matrix [i][j]=k+1;
+                                            if(bactrack(matrix, size)==-1){
+                                                printf("thread %d e deu mal (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
+                                            }else{
+                                                printf("thread %d e deu bem (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
+                                                for(i2 = 0; i2 < size ; i2++){
+                                                    for(i3 = 0; i3 < size ; i3++){
+                                                        printf("%d ",matrix [i2][i3]);
+                                                } 
+                                                printf("\n");
+                                                }
+                                            }
+                                        }
+                                        sai=0;
+                                        printf("morre thread %d\n",omp_get_thread_num());
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }else{
                             //Set value on the puzzle
-                            puzzle[i][j]=k+1;
+                            
                             break;
                         }
+                        if (puzzle[i][j]>=k+1)break;
                     }
-            }
+                }
             
-            while(puzzle[i][j]==0)
+                while(puzzle[i][j]==0)
                 {
                     //No valid options found
                     found=0;
@@ -233,11 +223,10 @@ int bactrack(int **puzzle, int size)
                     temp=puzzle[i][j];
                     
                     //Go up on the possible values
-                    if(stable[i][j]==0){
                     for(k=puzzle[i][j];k<size;k++)
                     {
                         //Check if the value is valid
-                        if(is_valid(puzzle, k+1,i, j,size)==1 )
+                        if(is_valid(puzzle, k+1,i, j,size)==1 && stable[i][j]==0)
                         {
                             //If it is value, update and set flag
                             found=1;
@@ -245,17 +234,17 @@ int bactrack(int **puzzle, int size)
                             break;
                         }
                     }
-                    }
                     //if no valid value was found set to zero and continue moving back
                     if(found==0){
                         puzzle[i][j]=0;
                         continue;
                     }
                 }
-            //}
+            }
         }
         
-    }}
+    }
+    while(sai==1){}
     return 0;
 }
 
