@@ -26,26 +26,13 @@ int collum_valid(int** total,int collum, int num, int tam){
 //https://cboard.cprogramming.com/c-programming/150917-how-check-square-block-condition-sudoku-its-validity.html
 int sq_valid(int** total, int row, int collum,int num, int tam ){
 	int i,j,aux_col,aux_row;
-	double aux;
+	int aux;
 	//Calcula o tamanho do  quadrado pequeno
 	aux=sqrt(tam); 
 
 	// Define a posição do elemento no canto superior esquerdo do subquadrado
-	for(i=0;i<aux;i++) 
-	{
-		if((row/aux)<i+1){
-			aux_row=aux*i;
-			break;
-		}
-	}
-
-	for(i=0;i<aux;i++)
-	{
-		if((collum/aux)<i+1){
-			aux_col=aux*i;
-			break;
-		}
-	}
+	aux_col= collum-(collum%aux);
+	aux_row= row-(row%aux);
 	
 
 	//Verifica o subquadrado
