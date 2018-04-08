@@ -8,6 +8,7 @@
 int bactrack(int **puzzle, int size);
 int threads = 0;
 int sai=0;
+omp_lock_t lck_a;
 
 int main(int argc, char **argv){
         int size,i,j,Nthreads;
@@ -17,6 +18,8 @@ int main(int argc, char **argv){
         omp_set_nested(1);
         Nthreads = 8;
         omp_set_num_threads(Nthreads);
+        
+        omp_init_lock(&lck_a);
         
         double start = omp_get_wtime();
 	if(argc != 2){ 
@@ -64,6 +67,7 @@ if(sai==0)
         printf("\n");
     }
     printf("\n");
+omp_destroy_lock(&lck_a);
     double end = omp_get_wtime();
     printf("Took  %f  seconds\n", end - start);
 }
@@ -84,7 +88,7 @@ int bactrack(int **puzzle, int size)
     
     
     int i, j, k,k1, found=0, temp=0, mythread,fim;
-    int a, b;
+    int a, b,par=0;
     
 
     //allocate a matrix
@@ -121,18 +125,25 @@ int bactrack(int **puzzle, int size)
                     //Check for valid values
                     if(is_valid(puzzle,k+1, i, j, size)==1)
                     {
+                        
 //                         printf("nthreads %d\n",threads);
-                        if (threads<omp_get_max_threads()-1){
+                        
+                        if (threads<omp_get_max_threads()){
                             
                             for(k1=k+1;k1<size;k1++)
                             {
                                 if(is_valid(puzzle,k1+1, i, j, size)==1){
-                                    #pragma omp parallel  if (threads<(omp_get_max_threads()-1)) num_threads(2)
+                                    omp_set_lock(&lck_a);
+                                    
+                                    #pragma omp parallel  if (threads<(omp_get_max_threads())) num_threads(2)
+                                    {   changethread(1);
+                                        omp_unset_lock(&lck_a);
                                     #pragma omp sections nowait
-                                    {   
+                                    {       
                                         #pragma omp section 
                                         {
-                                            changethread(1);
+                                            par=1;
+                                            
 //                                             threads++;
 //                                         printf("nova thread %d\n",omp_get_thread_num());
                                          
@@ -171,8 +182,7 @@ int bactrack(int **puzzle, int size)
                                         #pragma omp section
                                         {
 //                                             threads++;
-                                            changethread(1);
-                                            
+//                                             changethread(1);
                                             int i1,i2,i3;
                                             int **matrix ;
                                             matrix = (int **)malloc(size * size * sizeof(int *));
@@ -204,10 +214,13 @@ int bactrack(int **puzzle, int size)
                                         }
                                         
                                     }
-                                    k=k1;
+                                    }
+                                    omp_unset_lock(&lck_a);
+                                    
                                     break;
                                 }
                             }
+                            if (par==0){puzzle[i][j]=k+1;}else{par=0;k=k1;}
                             if(sai==1){
                                         
                                         break;
