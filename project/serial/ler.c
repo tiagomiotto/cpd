@@ -15,10 +15,10 @@ int main(int argc, char **argv){
 	int val;
 	FILE *stream;
         omp_set_nested(1);
-        Nthreads = 8;
+        Nthreads = 2;
         omp_set_num_threads(Nthreads);
         
-        
+        double start = omp_get_wtime();
 	if(argc != 2){ 
 		printf("erro nos argumentos\n");
 		exit(1);
@@ -64,7 +64,8 @@ if(sai==0)
         printf("\n");
     }
     printf("\n");
-    
+    double end = omp_get_wtime();
+    printf("Took  %f  seconds\n", end - start);
 }
 
 
