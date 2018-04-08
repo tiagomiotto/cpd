@@ -6,6 +6,7 @@
 #include "verify.h"
 
 int bactrack(int **puzzle, int size);
+void printmatrix(int **puzzle, int size);
 int threads = 1;
 int sai=0;
 omp_lock_t lck_a;
@@ -48,28 +49,33 @@ int main(int argc, char **argv){
 		}
 	}
 	
-	for (i = 0; i < size * size; i++){
-		for(j = 0; j < size * size; j++) {
-			printf("%d ",matrix[i][j]);
-		}
-		printf("\n");
-	}
-    printf("\n");
+	
     
     if(bactrack(matrix, size*size)==-1){
         return -1;
     }
-if(sai==0)
+if(sai==0)printmatrix(matrix,size*size);
+    
+//     printf("\n");
+omp_destroy_lock(&lck_a);
+    double end = omp_get_wtime();
     for (i = 0; i < size * size; i++){
-        for(j = 0; j < size * size; j++) {
+		free(matrix[i]);
+	}
+	free(matrix);
+//     printf("\n");
+//     printf("Took  %f  seconds\n", end - start);
+}
+
+void printmatrix(int **matrix, int size){
+    int i ,j;
+    #pragma omp critical
+    for (i = 0; i < size; i++){
+        for(j = 0; j < size; j++) {
             printf("%d ",matrix[i][j]);
         }
         printf("\n");
     }
-    printf("\n");
-omp_destroy_lock(&lck_a);
-    double end = omp_get_wtime();
-    printf("Took  %f  seconds\n", end - start);
 }
 
 void changethread(int a)
@@ -125,8 +131,8 @@ int bactrack(int **puzzle, int size)
                     //Check for valid values
                     if(is_valid(puzzle,k+1, i, j, size)==1)
                     {
-                        if (threads<9)
-                        printf("nthreads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());
+//                         if (threads<9)
+//                         printf("nthreads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());
                         
                         if (threads<omp_get_max_threads()){
                             
@@ -143,7 +149,7 @@ int bactrack(int **puzzle, int size)
                                         #pragma omp section 
                                         {
                                             par=1;
-                                            if(mythread!=omp_get_thread_num()){changethread(1);printf("nova threads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());}
+                                            if(mythread!=omp_get_thread_num()){changethread(1);}
 //                                             threads++;
 //                                         printf("nova thread %d\n",omp_get_thread_num());
                                          
@@ -162,25 +168,23 @@ int bactrack(int **puzzle, int size)
 //                                              printf("thread %d e deu mal (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
                                             }else{
                                                 if (sai==0){
-                                             printf("thread %d e deu bem (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
-                                                for(i2 = 0; i2 < size ; i2++){
-                                                    for(i3 = 0; i3 < size ; i3++){
-                                                        printf("%d ",matrix [i2][i3]);
-                                                } 
-                                                printf("\n");
-                                                }
-                                                printf("\n");}
+//                                              printf("thread %d e deu bem (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
+                                                printmatrix(matrix,size);}
                                                 sai=1;
                                                 #pragma omp flush(sai)
                                             }
-                                                if(mythread!=omp_get_thread_num()){changethread(-1);printf("morre threads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());}
+                                            for(i2 = 0; i2 < size ; i2++){
+                                                    free(matrix [i2]);  
+                                            }
+                                            free(matrix);
+                                                if(mythread!=omp_get_thread_num()){changethread(-1);}
 //                                             threads--;
                                         
 //                                         printf("morre thread %d\n",omp_get_thread_num());
                                         }
                                         #pragma omp section
                                         {
-                                            if(mythread!=omp_get_thread_num()){changethread(1);printf("nova threads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());}
+                                            if(mythread!=omp_get_thread_num()){changethread(1);}
 //                                             threads++;
 //                                             changethread(1);
                                             int i1,i2,i3;
@@ -198,19 +202,18 @@ int bactrack(int **puzzle, int size)
 //                                              printf("thread %d e deu mal (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
                                             }else{
                                                if (sai==0){
-                                             printf("thread %d e deu bem (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
-                                                for(i2 = 0; i2 < size ; i2++){
-                                                    for(i3 = 0; i3 < size ; i3++){
-                                                        printf("%d ",matrix [i2][i3]);
-                                                } 
-                                                printf("\n");
-                                                }
-                                                printf("\n");}
+//                                              printf("thread %d e deu bem (%d,%d)->%d\n",omp_get_thread_num(),i,j,matrix [i][j]);
+                                                printmatrix(matrix,size);
+                                                   }
                                                 sai=1;
                                                 #pragma omp flush(sai)
                                             }
+                                            for(i2 = 0; i2 < size ; i2++){
+                                                    free(matrix [i2]);
+                                            }
+                                            free(matrix);
 //                                            threads--;
-                                            if(mythread!=omp_get_thread_num()){changethread(-1);printf("morre threads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());}
+                                            if(mythread!=omp_get_thread_num()){changethread(-1);}
 
                                         }
                                         
