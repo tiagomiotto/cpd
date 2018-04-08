@@ -18,8 +18,8 @@ int main(int argc, char **argv){
 	int val;
 	FILE *stream;
         omp_set_nested(1);
-        Nthreads = 8;
-        omp_set_num_threads(Nthreads);
+//         Nthreads = 8;
+//         omp_set_num_threads(Nthreads);
         
         omp_init_lock(&lck_a);
         
