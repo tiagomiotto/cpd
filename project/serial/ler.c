@@ -10,6 +10,19 @@ int bactrack(int **puzzle, int size);
 bool finished = false;
 int threads = -1;
 
+bool validate_all(int**matrix,int size){
+	int i,j;
+	int **puzzle;
+         
+	for(i=0;i<size;i++){
+		for(j=0;j<size;j++){
+			if(matrix[i][j]==0)
+			 return false;
+		}
+	}
+	return true;
+}
+
 int main(int argc, char **argv)
 {
     //setenv("OMP_NUM_THREADS", "4,4", true);
@@ -22,9 +35,10 @@ int main(int argc, char **argv)
     int attempt = 0, backtracks = 0;
 
     omp_set_nested(1);
-
-    Nthreads = 4;
-    omp_set_num_threads(Nthreads);
+    omp_set_dynamic(1);
+/*
+    Nthreads = 1;
+    omp_set_num_threads(Nthreads);*/
     FILE *stream;
 
     if (argc != 2)
@@ -114,7 +128,7 @@ int bactrack(int **puzzle, int size)
         }
     }
     if (finished)
-        return 0;
+        return -1;
 
     //Move vertically
 
@@ -122,8 +136,7 @@ int bactrack(int **puzzle, int size)
     {
         if (finished)
         {
-            i = size + 1;
-            continue;
+		return -1;
         }
 
         //Move side ways
@@ -131,10 +144,8 @@ int bactrack(int **puzzle, int size)
         {
             if (finished)
             {
-                j = size + 1;
-                continue;
+			return -1;
             }
-
             if (stable[i][j] == 0)
             {
                 //Increment values until finds a valid bvalue
@@ -150,12 +161,18 @@ int bactrack(int **puzzle, int size)
                     printf("threads novas! %d num max %d\n\n", threads, omp_get_max_threads());
                     //                         #pragma omp parallel num_threads (-omp_get_num_threads()+omp_get_max_threads()+1)
                     //                         {
-#pragma omp parallel for /*nowait*/ private(matrix, i1, i2, i3) num_threads(threads) shared(finished, threads)
+#pragma omp parallel for /*nowait*/ private(matrix, i1, i2, i3) num_threads(threads) shared(finished, threads) schedule(static)
 
                     for (k = puzzle[i][j]; k < size; k++)
                     {
-                        bool i_finish = false;
+#pragma omp critical
+                        {
+                            threads=0;
 
+#pragma omp flush(threads)
+                        }
+                        bool i_finish = false;
+                        int counter;	
                         //Check for valid values
                         matrix = (int **)malloc(size * size * sizeof(int *));
                         for (int i1 = 0; i1 < size; i1++)
@@ -168,24 +185,25 @@ int bactrack(int **puzzle, int size)
                                 matrix[i2][i3] = puzzle[i2][i3];
                             }
                         }
-#pragma omp critical
-                        {
-                            threads=0;
-
-#pragma omp flush(threads)
-                        }
                         if (is_valid(puzzle, k + 1, i, j, size) == 1)
                         {
                             matrix[i][j] = k + 1;
                             printf("eu sou %d %d %d e vou tentar o %d\n", omp_get_thread_num(), i, j, k + 1);
 
-                            if (bactrack(matrix, size) == -1)
+                            if ((bactrack(matrix, size)) == -1)
                             {
-                                printf("eu sou %d %d %d e nao deu certo o %d\n", omp_get_thread_num(), i, j, k + 1);
+                                printf("eu sou %d %d %d e nao deu certo o %d Solution ivalide\n", omp_get_thread_num(), i, j, k + 1);
+                            	#pragma omp critical
+                        {
+                            threads++;
+
+#pragma omp flush(threads)
+                        }
 
                             }
                             else
                             {
+                            	if(validate_all(matrix,size)){
                                 printf("eu sou %d %d %d e deu certo o %d :D\n", omp_get_thread_num(), i, j, k + 1);
 #pragma omp critical
                                 {
@@ -205,11 +223,29 @@ int bactrack(int **puzzle, int size)
 
                                 printf("\n");
                                 sai = 1;
-                            }
+                            }else {printf("Solução inválida\n");
+                            	#pragma omp critical
+                        {
+                            threads++;
+
+#pragma omp flush(threads)
+                        }
+                        }}
                         }
                         else
                         {
                             printf("eu sou %d %d %d e nao é valido o %d\n", omp_get_thread_num(), i, j, k + 1);
+                            counter++;
+                            if(counter>=size/omp_get_num_threads()){
+                            	                            	#pragma omp critical
+                        {
+                            threads++;
+
+							#pragma omp flush(threads)
+							counter=0;
+
+                        }
+                            }
                         }
                         if (finished && !i_finish)
                         {
@@ -301,6 +337,8 @@ int bactrack(int **puzzle, int size)
                     }
 
                     //Reset flag
+if(i<0)i=0;
+ if(j<0)j=0;
                     found = 0;
                     //set the last value
                     temp = puzzle[i][j];

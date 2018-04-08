@@ -10,6 +10,7 @@ int row_valid(int** total,int row, int num,int tam){
 	int i;
 	for (i = 0; i < tam; ++i)
 	{
+
 		if(total[row][i]==num) return 0;
 	}
 	return 1;
@@ -43,10 +44,10 @@ int sq_valid(int** total, int row, int collum,int num, int tam ){
    return 1;
 
 }
-bool is_valid(int** total, int num, int row, int collum,int tam ){
+int is_valid(int** total, int num, int row, int collum,int tam ){
 	//Paralelizar essas 3
-	if((row_valid(total,row,num,tam))==false) return 0;  
-	if((collum_valid(total,collum,num,tam))==false) return 0;
-	if((sq_valid(total,row,collum,num,tam))==false) return 0;
+	if((row_valid(total,row,num,tam))==0) return 0;  
+	if((collum_valid(total,collum,num,tam))==0) return 0;
+	if((sq_valid(total,row,collum,num,tam))==0) return 0;
 	return 1;
 }
