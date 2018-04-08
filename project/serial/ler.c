@@ -9,6 +9,7 @@ int bactrack(int **puzzle, int size);
 void printmatrix(int **puzzle, int size);
 int threads = 1;
 int sai=0;
+int printm=0;
 omp_lock_t lck_a;
 
 int main(int argc, char **argv){
@@ -57,7 +58,7 @@ int main(int argc, char **argv){
 if(sai==0)printmatrix(matrix,size*size);
     
 //     printf("\n");
-omp_destroy_lock(&lck_a);
+    omp_destroy_lock(&lck_a);
     double end = omp_get_wtime();
     for (i = 0; i < size * size; i++){
 		free(matrix[i]);
@@ -70,11 +71,14 @@ omp_destroy_lock(&lck_a);
 void printmatrix(int **matrix, int size){
     int i ,j;
     #pragma omp critical
+    if (printm==0){
     for (i = 0; i < size; i++){
         for(j = 0; j < size; j++) {
             printf("%d ",matrix[i][j]);
         }
         printf("\n");
+    }
+    printm=1;
     }
 }
 
