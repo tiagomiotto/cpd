@@ -126,7 +126,7 @@ int bactrack(int **puzzle, int size)
                     if(is_valid(puzzle,k+1, i, j, size)==1)
                     {
                         if (threads<9)
-                        printf("nthreads %d %d\n",threads,omp_get_max_threads());
+                        printf("nthreads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());
                         
                         if (threads<omp_get_max_threads()){
                             
@@ -135,16 +135,15 @@ int bactrack(int **puzzle, int size)
                                 if(is_valid(puzzle,k1+1, i, j, size)==1){
                                     omp_set_lock(&lck_a);
 //                                     if (threads<omp_get_max_threads())
-                                    #pragma omp parallel  if(threads<(omp_get_max_threads())) num_threads(2)
-                                    {   if(mythread!=omp_get_thread_num())
-                                        changethread(1);
+                                    #pragma omp parallel  if(threads<(omp_get_max_threads())) 
+                                    {   
                                         omp_unset_lock(&lck_a);
                                     #pragma omp sections nowait
                                     {       
                                         #pragma omp section 
                                         {
                                             par=1;
-                                            
+                                            if(mythread!=omp_get_thread_num()){changethread(1);printf("nova threads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());}
 //                                             threads++;
 //                                         printf("nova thread %d\n",omp_get_thread_num());
                                          
@@ -174,13 +173,14 @@ int bactrack(int **puzzle, int size)
                                                 sai=1;
                                                 #pragma omp flush(sai)
                                             }
-                                            
+                                                if(mythread!=omp_get_thread_num()){changethread(-1);printf("morre threads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());}
 //                                             threads--;
                                         
 //                                         printf("morre thread %d\n",omp_get_thread_num());
                                         }
                                         #pragma omp section
                                         {
+                                            if(mythread!=omp_get_thread_num()){changethread(1);printf("nova threads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());}
 //                                             threads++;
 //                                             changethread(1);
                                             int i1,i2,i3;
@@ -210,12 +210,12 @@ int bactrack(int **puzzle, int size)
                                                 #pragma omp flush(sai)
                                             }
 //                                            threads--;
+                                            if(mythread!=omp_get_thread_num()){changethread(-1);printf("morre threads %d %d %d\n",threads,omp_get_max_threads(),omp_get_thread_num());}
 
                                         }
                                         
                                     }
-                                    if(mythread!=omp_get_thread_num())
-                                        changethread(-1);
+                                    
                                     }
                                     omp_unset_lock(&lck_a);
                                     
