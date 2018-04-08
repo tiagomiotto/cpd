@@ -2,9 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "verify.h"
+#include <omp.h>
+#include <math.h>
+#include <stdbool.h>
 
-int bactrack(int **puzzle, int *attempt, int *backtracks, int size);
+int bactrack_serial(int **puzzle, int size);
+int row_valid(int** total,int row, int num,int tam);
+int collum_valid(int** total,int collum, int num,int tam);
+int sq_valid(int** total, int row, int collum,int num, int tam );
+int is_valid(int** total, int row, int collum,int num, int tam );
+void  printm(int** matrix,int size);
 
 int main(int argc, char **argv){
     int size,i,j;
@@ -12,7 +19,6 @@ int main(int argc, char **argv){
 	int val;
     int attempt=0, backtracks=0;
 	FILE *stream;
-	
 	if(argc != 2){ 
 		printf("erro nos argumentos\n");
 		exit(1);
@@ -39,32 +45,27 @@ int main(int argc, char **argv){
 		}
 	}
 	
-	for (i = 0; i < size * size; i++){
-		for(j = 0; j < size * size; j++) {
-			printf("%d ",matrix[i][j]);
-		}
-		printf("\n");
-	}
+	printm(matrix,size*size);
     printf("\n");
     
-    if(bactrack(matrix, &attempt, &backtracks, size*size)==-1){
+	double start_serial = omp_get_wtime();
+    if(bactrack_serial(matrix, size*size)==-1){
+        printf("Serial took %f second",omp_get_wtime()-start_serial );
         return -1;
-    }
 
-    for (i = 0; i < size * size; i++){
-        for(j = 0; j < size * size; j++) {
-            printf("%d ",matrix[i][j]);
-        }
-        printf("\n");
     }
+    double end_serial = omp_get_wtime();
+
+    printf("Serial took %f second",end_serial-start_serial );
     printf("\n");
-    printf("Backtracks:%d and %d Attempts",backtracks,attempt);
+    return 0;
+    
     
 }
 
 
 
-int bactrack(int **puzzle, int *attempt, int *backtracks, int size)
+int bactrack_serial(int **puzzle, int size)
 {
     
     
@@ -196,6 +197,76 @@ int bactrack(int **puzzle, int *attempt, int *backtracks, int size)
         }
         
     }
+    printm(puzzle,size);
     return 0;
+
 }
 
+int row_valid(int** total,int row, int num,int tam){
+
+	int i;
+	for (i = 0; i < tam; ++i)
+	{
+		if(total[row][i]==num) return 0;
+	}
+	return 1;
+}
+int collum_valid(int** total,int collum, int num, int tam){
+
+	int i;
+	for (i = 0; i < tam; ++i)
+	{
+		if(total[i][collum]==num) return 0;
+	}
+	return 1;
+}
+//https://cboard.cprogramming.com/c-programming/150917-how-check-square-block-condition-sudoku-its-validity.html
+int sq_valid(int** total, int row, int collum,int num, int tam ){
+	int i,j,aux_col,aux_row;
+	double aux;
+	//Calcula o tamanho do  quadrado pequeno
+	aux=sqrt(tam); 
+
+	// Define a posição do elemento no canto superior esquerdo do subquadrado
+	for(i=0;i<aux;i++) 
+	{
+		if((row/aux)<i+1){
+			aux_row=aux*i;
+			break;
+		}
+	}
+
+	for(i=0;i<aux;i++)
+	{
+		if((collum/aux)<i+1){
+			aux_col=aux*i;
+			break;
+		}
+	}
+	
+
+	//Verifica o subquadrado
+	for(i = aux_row; i < aux_row+aux; i++)
+       for(j = aux_col; j < aux_col+aux; j++)
+            if(total[i][j]==num)    return 0;
+
+   return 1;
+
+}
+int is_valid(int** total, int num, int row, int collum,int tam ){
+	//Paralelizar essas 3
+	if((row_valid(total,row,num,tam))==false) return 0;  
+	if((collum_valid(total,collum,num,tam))==false) return 0;
+	if((sq_valid(total,row,collum,num,tam))==false) return 0;
+	return 1;
+}
+void  printm(int** matrix,int size){
+	int i,j;
+
+	    for (i = 0; i < size ; i++){
+        for(j = 0; j < size ; j++) {
+            printf("%d ",matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
