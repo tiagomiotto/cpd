@@ -26,11 +26,11 @@ int main(int argc, char **argv){
 	int fim=0;
 	int ini=1;
 	int **matrix;
-	
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank (MPI_COMM_WORLD, &id);
 	MPI_Comm_size (MPI_COMM_WORLD, &p);
 	
+	int *lucky=malloc((p/2)*sizeof(int)); 
 	MPI_Request request;
 	MPI_Status status,status2,status3;
 	
@@ -79,6 +79,22 @@ int main(int argc, char **argv){
 		printm(matrix,size*size);
 		printf("\n");
 	}
+
+	int j=2;
+	for (i = 0; i < p/2; ++i)
+	{
+		lucky[i]=j;
+		j+=2;
+	}
+
+	if(id==0 && ini==1){
+		first_send();
+	}
+	if (is_in(lucky,p/2,pos_id))
+	{
+		first_recv();
+	}
+
 // 	MPI_Barrier(MPI_COMM_WORLD);
 	while(fim==0){
 		if (id==0 && ini==1){
@@ -464,4 +480,19 @@ void  printm(int** matrix,int size){
         }
         printf("\n");
     }
+}
+
+bool is_in(int* arr,int size, int num){
+	for (int i = 0; i < size; ++i)
+	{
+		if(arr[i]==num) return true;
+	}
+	return false;
+}
+
+bool first_send(int mypos,int theirpos){
+
+}
+bool first_recv(int mypos){
+
 }
