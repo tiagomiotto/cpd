@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <mpi.h>
+#define FIR_DIV 2
 
 int bactrack_serial(int **puzzle, int size);
 int row_valid(int** total,int row, int num,int tam);
@@ -19,7 +20,7 @@ int flag2=0;
 int flag3=0;
 
 int main(int argc, char **argv){
-	int size,i,j,send_id,pos_id,resp,tag=123,a[2],tag2=321;
+	int size,i=0,j=0,send_id,pos_id,resp,tag=123,a[2],tag2=321;
 	char *file;
 	int val;
 	int id,p,point;
@@ -33,7 +34,7 @@ int main(int argc, char **argv){
 	int *lucky=malloc((p/2)*sizeof(int)); 
 	MPI_Request request;
 	MPI_Status status,status2,status3;
-	
+
 	if(id==0){
 		send_id=p-1;
 	}else{
@@ -80,24 +81,197 @@ int main(int argc, char **argv){
 		printf("\n");
 	}
 
-	int j=2;
-	for (i = 0; i < p/2; ++i)
+
+	int divisions = p/FIR_DIV-1;
+
+	int contador=0;
+	int senders =1;
+	int first_save,first_i,first_j,k;
+	if(id == 0) //master first send
 	{
-		lucky[i]=j;
-		j+=2;
+		i=0;j=0;
+	    for(k = 0; k < size*size; k++)
+	    {
+	    	if(matrix[i][j]!=0){
+	        while(matrix[i][j] != 0) //Encontra o primeiro lugar que pode ser mudado
+	        {
+	            if(j == (size*size-1))
+	            {
+	            	if(i==(size*size-1)) break;
+	                i++;
+	                j = 0;
+	            }
+	            else j++;
+	        }
+	    	}
+	        if(is_valid(matrix, k + 1, i, j, size) == 1)
+	        {
+	                    	
+	            first_j = j;
+	            first_i = i;
+	            first_save = k+1;
+	            break;
+	        }
+	
+	    }
+	    
+	    while(senders < divisions + 1)
+	    {
+	        if(matrix[i][j] == 0)
+	        {
+	            for(k = first_save; k < size; k++)
+	            {
+	                if(is_valid(matrix, k + 1, i, j, size) == 1)
+	                {
+	                    int get_id2 = senders * FIR_DIV;
+	                    if (!flag)MPI_Iprobe(get_id2, tag, MPI_COMM_WORLD, &flag , &status);
+	                    if (flag)
+	                    {
+	                        for(int k1 = k + 1; k1 < size; k1++)
+	                        {
+	                            if(is_valid(matrix, k + 1, i, j, size) == 1)
+	                            {
+	                                flag = 0;
+	                                if (flag3 == 0)MPI_Irecv(&a, 2, MPI_INT , get_id2, tag, MPI_COMM_WORLD, &request);
+	                                flag3 = 0;
+	                                printf("enviar copia de %d para %d (%d,%d)\n", id, get_id2, i, j);
+	
+	                                int *data2 = (int *)malloc(size * size * sizeof(int));
+	                                int **matrix2 = (int **)malloc(size * sizeof(int *));
+	                                for (int i1 = 0; i1 < size; i1++)
+	                                    matrix2[i1] = &(data2[size * i1]);
+	
+	                                for (int i1 = 0; i1 < size; i1++)
+	                                {
+	                                    for(int j1 = 0; j1 < size; j1++)
+	                                    {
+	                                        matrix2[i1][j1] = matrix[i1][j1];
+	                                        // 											printf(" %d (%d,%d)",id,i1,j1);
+	                                    }
+	                                }
+	                                // 									printf("\n");
+	                                matrix2[i][j] = k + 1;
+	                                MPI_Send(&(matrix2[0][0]), size * size, MPI_INT , get_id2, tag, MPI_COMM_WORLD);
+	                                free(matrix2[0]);
+	                                free(matrix2);
+	                                senders++;
+	                                printf("copia enviada para %d\n",senders);
+	
+	                                if(k1 == size - 1)
+	                                {
+	                                    if(i == first_i && j == first_j) matrix[i][j] = first_save + 1;
+	                                    else matrix[i][j] = k + 1;
+	                                    if(j == 8)
+	                                    {
+	                                        i++;
+	                                        j = 0;
+	                                    }
+	                                    else j++;
+	
+	                                    while(matrix[i][j] != 0)
+	                                    {
+	                                        if(j == 8)
+	                                        {
+	                                            i++;
+	                                            j = 0;
+	                                        }
+	                                        else j++;
+	                                    }
+	                                    k = 0;
+	                                }
+
+	                            }else{
+	                            if(k1 == size - 1)
+	                            {
+	                                if(i == first_i && j == first_j) matrix[i][j] = first_save + 1;
+	                                else matrix[i][j] = k + 1;
+	                                if(j == 8)
+	                                {
+	                                    i++;
+	                                    j = 0;
+	                                }
+	                                else j++;
+	
+	                                while(matrix[i][j] != 0)
+	                                {
+	                                    if(j == 8)
+	                                    {
+	                                        i++;
+	                                        j = 0;
+	                                    }
+	                                    else j++;
+	                                }
+	                                k = 0;
+	                            }
+	                          
+	                            //Caso nao hajam mais valores possiveis para o enviar
+	                           }
+
+	                            if(senders >= divisions) {
+	                            	
+	                            	break;
+	                            }
+	                        }
+	                    }
+	                }	
+	                  if(senders >= divisions) break;
+	            }
+	            
+	        }
+	 
+	        else
+	        {
+	            if(j == 8)
+	            {
+	                i++;
+	                j = 0;
+	            }
+	            else j++;
+	            k = 0;
+	        }
+	        
+	
+	    }
+	    
+
+	    if(i == first_i && j == first_j) {
+
+	    	matrix[i][j] = first_save + 1;
+
+	    }
+	    printf("vamos começar\n");
+	    ini=1;
 	}
 
-	if(id==0 && ini==1){
-		first_send();
-	}
-	if (is_in(lucky,p/2,pos_id))
+	if (id % 2 == 0 && id != 0 ) //first recv
 	{
-		first_recv();
-	}
+	    a[0] = 1;
+	    if (id < a[1])a[1] = id;
+	    point = a[1];
+	    MPI_Isend(&a, 2, MPI_INT, 0, tag, MPI_COMM_WORLD, &request);
+	    //printf("ola\n");
+	    printf("pedido inicial de id= %d para send_id= %d  a[1]=%d\n", id, 0, a[1]);
+	    //MPI_Iprobe(send_id, tag, MPI_COMM_WORLD, &flag2 , &status);
 
+	        MPI_Probe(0, tag, MPI_COMM_WORLD, &status);
+	        MPI_Get_count(&status, MPI_INT, &size);
+	        size = sqrt(size);
+	
+	        int *data = (int *)malloc(size * size * sizeof(int));
+	        matrix = (int **)malloc(size * sizeof(int *));
+	        for ( i = 0; i < size; i++)
+	            matrix[i] = &(data[size * i]);
+	
+	        MPI_Recv(&(matrix[0][0]), size * size, MPI_INT , 0, tag, MPI_COMM_WORLD, &status);
+	        printf("recebo size=%d  id=%d  from=%d\n", size, id, 0);
+	        printm(matrix,size*size);
+	    
+	    ini = 1;
+	}
+	else ini = 0;
 // 	MPI_Barrier(MPI_COMM_WORLD);
 	while(fim==0){
-		if (id==0 && ini==1){
+		if (ini==1){
 			ini=0;
 			resp=bactrack_serial(matrix, size*size);
 			if(resp==0){
@@ -170,6 +344,7 @@ int main(int argc, char **argv){
 				flag2=0;
 			}
 			if (flag2==1){
+				//printf("vamos la\n");
 				MPI_Probe(send_id, tag, MPI_COMM_WORLD, &status);
 				MPI_Get_count(&status, MPI_INT, &size);
 				size=sqrt(size);
@@ -488,11 +663,4 @@ bool is_in(int* arr,int size, int num){
 		if(arr[i]==num) return true;
 	}
 	return false;
-}
-
-bool first_send(int mypos,int theirpos){
-
-}
-bool first_recv(int mypos){
-
 }
