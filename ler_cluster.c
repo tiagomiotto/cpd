@@ -12,14 +12,17 @@ int collum_valid(int** total,int collum, int num,int tam);
 int sq_valid(int** total, int row, int collum,int num, int tam );
 int is_valid(int** total, int row, int collum,int num, int tam );
 void  printm(int** matrix,int size);
+void freematrix(int **puzzle, int size);
 int flag=0;
-
+int flag1=0;
+int flag2=0;
+int flag3=0;
 
 int main(int argc, char **argv){
-	int size,i,j,send_id,pos_id,resp,tag=123,a,tag2=321;
+	int size,i,j,send_id,pos_id,resp,tag=123,a[2];
 	char *file;
 	int val;
-	int id,p;
+	int id,p,point;
 	int fim=0;
 	int ini=1;
 	int **matrix;
@@ -29,7 +32,7 @@ int main(int argc, char **argv){
 	MPI_Comm_size (MPI_COMM_WORLD, &p);
 	
 	MPI_Request request;
-	MPI_Status status;
+	MPI_Status status,status2,status3;
 	
 	if(id==0){
 		send_id=p-1;
@@ -82,50 +85,115 @@ int main(int argc, char **argv){
 			ini=0;
 			resp=bactrack_serial(matrix, size*size);
 			if(resp==0){
-				a=0;
-				printf("sol id=%d enviar para %d\n",id,send_id);
-				MPI_Isend(&a, 1, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
-				printf("sol id=%d espera por %d\n",id,pos_id);
-				MPI_Recv(&a,1,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status);
+				a[0]=0;
+				a[1]=p;
+				printf("1-sol id=%d enviar para %d\n",id,send_id);
+				MPI_Send(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD);
+				printf("1-sol id=%d espera por %d\n",id,pos_id);
+                                
+				MPI_Recv(&a,2,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status);
 				fim=1;
 			}else if(resp==1){
-				printf("vou sair id=%d enviar para %d\n",id,send_id);
-				a=0;
-				MPI_Isend(&a, 1, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
+				printf("1-vou sair id=%d enviar para %d\n",id,send_id);
+				a[0]=0;
+				MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
 				fim=1;
 			}
 		}else{
-			a=1;
-			MPI_Isend(&a, 1, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
-			printf("pedido de id= %d para send_id= %d\n",id,send_id);
-			MPI_Probe(send_id, tag, MPI_COMM_WORLD, &status);
-			MPI_Get_count(&status, MPI_INT, &size);
-			size=sqrt(size);
-			
-			
-			int *data = (int *)malloc(size*size*sizeof(int));
-			matrix= (int **)malloc(size*sizeof(int*));
-			for ( i=0; i<size; i++)
-				matrix[i] = &(data[size*i]);
-			
-			MPI_Recv(&(matrix[0][0]),size*size,MPI_INT , send_id, tag, MPI_COMM_WORLD, &status);
-			printf("recebo size=%d  id=%d  from=%d\n",size,id,send_id);
-			resp=bactrack_serial(matrix, size);
-			free(matrix[0]);
-			free(matrix);
-			if(resp==0){
-				a=0;
-				printf("sol id=%d enviar para %d\n",id,send_id);
-				MPI_Isend(&a, 1, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
-				printf("Sol id=%d espera por %d\n",id,pos_id);
-				MPI_Recv(&a,1,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status);
-				fim=1;
-			}else if(resp==1){
-				a=0;
-				printf("vou sair id=%d enviar para %d\n",id,send_id);
-				MPI_Isend(&a, 1, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
-				fim=1;
+			a[1]=id;
+			MPI_Iprobe(pos_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
+			if(flag1==1){// printf("test a[1]\n");
+					MPI_Recv(&a,2,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status2);
+					if (a[0]==1){
+						flag=1;
+						flag1=0;
+						flag3=1;
+					}
+				}
+			a[0]=1;
+			if (id<a[1])a[1]=id;
+			point=a[1];
+			MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
+			printf("pedido de id= %d para send_id= %d  a[0]=%d a[1]=%d\n",id,send_id,a[0],a[1]);
+			if(send_id==a[1])printf("aAAAAAAAAAAA\n");
+			while(flag1==0 && flag2==0 && fim==0){
+				MPI_Iprobe(pos_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
+				MPI_Iprobe(send_id, tag, MPI_COMM_WORLD,&flag2 , &status);
+				if(flag1==1){
+					MPI_Recv(&a,2,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status2);
+					if (a[0]==1){//printf("new id\n");
+						flag=1;
+						flag1=0;
+						flag3=1;
+						if(a[1]==id){
+							flag2=0;
+							fim=1;
+							a[0]=0;
+							printf("no sol id=%d enviar para %d\n",id,send_id);
+							MPI_Send(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD);
+							printf("No sol id=%d espera por %d\n",id,pos_id);
+							MPI_Probe(pos_id, tag, MPI_COMM_WORLD, &status3);
+							MPI_Recv(&a,2,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status3);
+							printf("no solution  no solution   no solution  no solution  no solution  no solution no solution  no solution\n");
+							printf("id=%d flag1=%d flag2=%d \n",id,flag1,flag2);
+						}
+						if(a[1]<point){
+							point=a[1];
+							a[0]=1;
+							MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
+						}
+					}else{
+						flag2=0;
+						printf("id=%d flag1=%d flag2=%d \n",id,flag1,flag2);
+					}
+				}
+				
 			}
+			if (flag1==1){
+				printf("3-vou sair id=%d enviar para %d a[0]=%d\n",id,send_id,a[0]);
+				a[0]=0;
+				MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
+				fim=1;
+				flag2=0;
+			}
+			if (flag2==1){
+				point=id;
+				a[1]=id;
+				MPI_Probe(send_id, tag, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_INT, &size);
+				size=sqrt(size);
+				
+				int *data = (int *)malloc(size*size*sizeof(int));
+				matrix= (int **)malloc(size*sizeof(int*));
+				for ( i=0; i<size; i++)
+					matrix[i] = &(data[size*i]);
+				
+				MPI_Recv(&(matrix[0][0]),size*size,MPI_INT , send_id, tag, MPI_COMM_WORLD, &status);
+//				printf("recebo size=%d  id=%d  from=%d\n",size,id,send_id);
+				resp=bactrack_serial(matrix, size);
+				free(matrix[0]);
+				free(matrix);
+				if(resp==0){
+					a[0]=0;
+					printf("2-sol id=%d enviar para %d\n",id,send_id);
+					MPI_Send(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD);
+					printf("2-Sol id=%d espera por %d\n",id,pos_id);
+					MPI_Recv(&a,2,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status);
+					fim=1;
+				}else if(resp==1){
+					MPI_Iprobe(send_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
+					if(flag1==1)MPI_Recv(&a,2,MPI_INT , send_id, tag, MPI_COMM_WORLD, &status2);
+					a[0]=0;
+					printf("2-vou sair id=%d enviar para %d\n",id,send_id);
+					MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
+					fim=1;
+				}
+			}
+			flag1=0;
+			flag2=0;
+// 			if (fim==1){
+// 				 MPI_Cancel(&request);
+// 			}
 		}
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -138,8 +206,8 @@ int main(int argc, char **argv){
 int bactrack_serial(int **puzzle, int size)
 {
     
-    int i, j, k,k1, found=0, temp=0,p,tag=123,tag2=321;
-    int a, b,id,get_id,envia=0;
+    int i, j, k,k1, found=0, temp=0,p,tag=123;
+    int a[2], b,id,get_id,envia=0;
 	
 	
     MPI_Comm_rank (MPI_COMM_WORLD, &id);
@@ -154,6 +222,13 @@ int bactrack_serial(int **puzzle, int size)
 		get_id=id+1;
 	}
 
+	
+// 	int *data = (int *)malloc(size*size*sizeof(int));
+// 	int **stable= (int **)malloc(size*sizeof(int*));
+// 	for ( i=0; i<size; i++)
+// 		stable[i] = &(data[size*i]);
+	
+	
     //allocate a matrix
     int **stable = (int **)malloc(size * sizeof(int *));
     for(i = 0; i < size; i++) stable[i] = (int *)malloc(size * sizeof(int));
@@ -186,17 +261,20 @@ int bactrack_serial(int **puzzle, int size)
                 {
                     //Check for valid values
                     if(is_valid(puzzle,k+1, i, j, size)==1)
-                    {
-						if (!flag)MPI_Iprobe(get_id, tag, MPI_COMM_WORLD, &flag , &status);
-						if (flag){
+                    {//printf("flag=%d id=%d from=%d ",flag,id,get_id);
+						if (flag==0)MPI_Iprobe(get_id, tag, MPI_COMM_WORLD, &flag , &status);
+						if (flag==1){//printf("entrou para enviar\n");
 							for(k1=k+1;k1<size;k1++){
 								 if(is_valid(puzzle,k1+1, i, j, size)==1){
 									flag=0;
 									envia=1;
 									puzzle[i][j]=k1+1;
-									MPI_Irecv(&a,1,MPI_INT , get_id, tag, MPI_COMM_WORLD, &request);
-									if (a==0)return 1;
-									printf("enviar copia de %d para %d (%d,%d)\n",id,get_id,i,j);
+									a[0]=1;
+									if (flag3==0)MPI_Irecv(&a,2,MPI_INT , get_id, tag, MPI_COMM_WORLD, &request);
+									if (a[0]==0){ printf("tou a  trabalhar e vou sair %d from %d a[0]=%d\n",id,get_id,a[0]); 
+freematrix(stable,size);return 1;}
+									flag3=0;
+//									printf("enviar copia de %d para %d (%d,%d)\n",id,get_id,i,j);
 									
 									int *data = (int *)malloc(size*size*sizeof(int));
 									int **matrix= (int **)malloc(size*sizeof(int*));
@@ -277,7 +355,8 @@ int bactrack_serial(int **puzzle, int size)
                                     break;
                             }
                         } else {
-                            printf("This puzzle has no solution!!\n");
+							freematrix(stable,size);
+//                            printf("This puzzle has no solution!! id=%d\n",id);
                             return -1;
                         }
                     }
@@ -312,8 +391,15 @@ int bactrack_serial(int **puzzle, int size)
         
     }
     printm(puzzle,size);
+ 	freematrix(stable,size);
     return 0;
 
+}
+
+void freematrix(int **puzzle, int size){
+	for (int i=0;i<size; i++)
+		free(puzzle[i]);
+	free(puzzle);
 }
 
 int row_valid(int** total,int row, int num,int tam){
