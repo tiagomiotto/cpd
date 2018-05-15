@@ -397,7 +397,7 @@ int main(int argc, char **argv){
 					printf("2-Sol id=%d espera por %d\n",id,pos_id);
 					MPI_Recv(&a,2,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status);
 					ifinish=1;
-
+					size=sqrt(size);
 					fim=1;
 				}else if(resp==1){
 					MPI_Iprobe(send_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
@@ -420,6 +420,7 @@ int main(int argc, char **argv){
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(ifinish==1){
 				printf("finished matrix for %d\n",id );
+
 				printm(matrix,size*size);
 				free(matrix[0]);
 				free(matrix);
