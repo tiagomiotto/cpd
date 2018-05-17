@@ -5,7 +5,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <mpi.h>
-#define FIR_DIV 2
+#define FIR_DIV 4
 
 int bactrack_serial(int **puzzle, int size, int** stabl2);
 int row_valid(int** total,int row, int num,int tam);
@@ -202,7 +202,8 @@ int main(int argc, char **argv){
 	    ini=1;
 	}
 
-	if (id % 2 == 0 && id != 0 && (id/FIR_DIV)<=divisions) //first recv
+	if (id % FIR_DIV == 0 && id != 0 && (id/FIR_DIV)<=divisions) 
+//first recv
 	{
 	    a[0] = 1;
 	    if (id < a[1])a[1] = id;
