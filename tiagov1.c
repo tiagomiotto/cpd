@@ -397,6 +397,7 @@ int main(int argc, char **argv){
 					ifinish=0;
 					fim=1;
 				}
+				//free(matrix[0]);free(matrix);size=0;
 			}
 			flag1=0;
 			flag2=0;
@@ -415,9 +416,9 @@ int main(int argc, char **argv){
 		printf("matrix of %d of size %d freed\n",id,size );
 	}
 	else {
-		if(size!=size_master)size=size_master;
+//		if(size!=size_master)size=size_master;
 	//	printf("%d,%d\n",size,id );
-		if(size!=0){free(matrix[0]);free(matrix);}
+//		if(size!=0){free(matrix[0]);free(matrix);}
 
 	}
 	MPI_Finalize();
@@ -515,7 +516,8 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
 									if (flag3==0)MPI_Irecv(&a,2,MPI_INT , get_id, tag, MPI_COMM_WORLD, &request);
 									if (a[0]==0){ //printf("recebi 0");
 										printf("tou a  trabalhar e vou sair %d from %d a[0]=%d,size = %d\n",id,get_id,a[0],size); 
-									freematrix(stable,size);return 1;}
+									freematrix(stable,size);
+									free(puzzle[0]);free(puzzle);return 1;}
 									flag3=0;
 									//printf("enviar copia de %d para %d (%d,%d) com %d\n",id,get_id,i,j,k+1);
 									/*
@@ -599,6 +601,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
                                     break;
                             }
                         } else {
+				free(puzzle[0]);free(puzzle);
 							freematrix(stable,size);
                             //printf("This puzzle has no solution!! id=%d\n",id);
                             return -1;
