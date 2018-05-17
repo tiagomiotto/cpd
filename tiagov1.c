@@ -130,7 +130,7 @@ int main(int argc, char **argv){
 								// 	printf("\n");
 								matrix2[i][j] = k + 1;
 								MPI_Send(&(matrix2[0][0]), size * size, MPI_INT , get_id2, tag, MPI_COMM_WORLD);
-								printf("copia enviada para %d com %d na (%d,%d), div %d\n",senders,k+1,i,j,size);
+							//	printf("copia enviada para %d com %d na (%d,%d), div %d\n",senders,k+1,i,j,size);
 								//printf("ola2\n");
 								senders++;
 	                                //freematrix(matrix2,size);
@@ -307,7 +307,7 @@ int main(int argc, char **argv){
 			if (id<a[1])a[1]=id;
 			point=a[1];
 			MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
-			printf("pedido de id= %d para send_id= %d  a[0]=%d a[1]=%d\n",id,send_id,a[0],a[1]);
+		//	printf("pedido de id= %d para send_id= %d  a[0]=%d a[1]=%d\n",id,send_id,a[0],a[1]);
 			if(send_id==a[1])printf("aAAAAAAAAAAA\n");
 			while(flag1==0 && flag2==0 && fim==0){
 				MPI_Iprobe(pos_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
@@ -360,7 +360,7 @@ int main(int argc, char **argv){
 				MPI_Get_count(&status, MPI_INT, &size);
 				size=sqrt(size);
 				
-				printf("RRRRRRecebo size=%d  id=%d  from=%d\n",size,id,send_id);
+			//	printf("RRRRRRecebo size=%d  id=%d  from=%d\n",size,id,send_id);
 				int *data = (int *)malloc(size*size*sizeof(int));
 				matrix= (int **)malloc(size*sizeof(int*));
 				for ( i=0; i<size; i++)
@@ -406,7 +406,7 @@ int main(int argc, char **argv){
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(ifinish==1){
 		if(size!=size_master)size=size_master;
-		printf("F %d,%d\n",size,id );
+	//	printf("F %d,%d\n",size,id );
 				printf("finished matrix for %d\n",id );
 				printm(matrix,size);
 				free(matrix[0]);free(matrix);
@@ -414,8 +414,8 @@ int main(int argc, char **argv){
 	}
 	else {
 		if(size!=size_master)size=size_master;
-		printf("%d,%d\n",size,id );
-		if(id!=3){free(matrix[0]);free(matrix);}
+	//	printf("%d,%d\n",size,id );
+		if(size!=0){free(matrix[0]);free(matrix);}
 
 	}
 	MPI_Finalize();
@@ -456,7 +456,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
 	
     //Check what values are lock
     if(stable2==NULL){
-    	if(id!=3)printf("ola id=%d, get_id= %d, size= %d\n",id,get_id,size);
+    //	if(id!=3)printf("ola id=%d, get_id= %d, size= %d\n",id,get_id,size);
     for(i=0;i<size;i++)
     {
         for(j=0;j<size;j++)
@@ -478,7 +478,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
         }
     }
 	freematrix(stable2,size);}
-	printf("ola id=%d, get_id= %d, size= %d\n",id,get_id,size);
+//	printf("ola id=%d, get_id= %d, size= %d\n",id,get_id,size);
  
     
 
