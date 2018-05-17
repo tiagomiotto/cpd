@@ -115,22 +115,23 @@ int main(int argc, char **argv){
 								MPI_Probe(get_id2, tag, MPI_COMM_WORLD, &status);
 								MPI_Recv(a, 2, MPI_INT , get_id2, tag, MPI_COMM_WORLD, &status);
 								printf("enviar copia de %d para %d (%d,%d) com %d\n", id, get_id2, i, j,k+1);
-								int *data2 = (int *)malloc(size * size * sizeof(int));
-								int **matrix2 = (int **)malloc(size * sizeof(int *));
-								for (int i1 = 0; i1 < size; i1++)
-									matrix2[i1] = &(data2[size * i1]);
-								for (int i1 = 0; i1 < size; i1++)
-								{
-									for(int j1 = 0; j1 < size; j1++)
-									{
-										matrix2[i1][j1] = matrix[i1][j1];
-										//printf(" %d (%d,%d)",id,i1,j1);
-									}
-								}
+								//int *data2 = (int *)malloc(size * size * sizeof(int));
+								//int **matrix2 = (int **)malloc(size * sizeof(int *));
+								//for (int i1 = 0; i1 < size; i1++)
+								//	matrix2[i1] = &(data2[size * i1]);
+								//for (int i1 = 0; i1 < size; i1++)
+								//{
+								//	for(int j1 = 0; j1 < size; j1++)
+								//	{
+								//		matrix2[i1][j1] = matrix[i1][j1];
+								//		//printf(" %d (%d,%d)",id,i1,j1);
+								//	}
+								//}
 								// 	printf("\n");
-								matrix2[i][j] = k + 1;
-								MPI_Send(&(matrix2[0][0]), size * size, MPI_INT , get_id2, tag, MPI_COMM_WORLD);
+								matrix[i][j] = k + 1;
+								MPI_Send(&(matrix[0][0]), size * size, MPI_INT , get_id2, tag, MPI_COMM_WORLD);
 							//	printf("copia enviada para %d com %d na (%d,%d), div %d\n",senders,k+1,i,j,size);
+								matrix[i][j] = 0;
 								//printf("ola2\n");
 								senders++;
 	                                //freematrix(matrix2,size);
@@ -508,7 +509,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
 									//printf("ola from id %d, a=%d\n",i,a[0] );
 									flag=0;
 									envia=1;
-									puzzle[i][j]=k1+1;
+									//puzzle[i][j]=k1+1;
 									a[0]=1;
 									//printf("recebi 0");
 									if (flag3==0)MPI_Irecv(&a,2,MPI_INT , get_id, tag, MPI_COMM_WORLD, &request);
@@ -517,7 +518,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
 									freematrix(stable,size);return 1;}
 									flag3=0;
 									//printf("enviar copia de %d para %d (%d,%d) com %d\n",id,get_id,i,j,k+1);
-									
+									/*
 									int *data = (int *)malloc(size*size*sizeof(int));
 									int **matrix= (int **)malloc(size*sizeof(int*));
 									for (int i1=0; i1<size; i1++)
@@ -529,12 +530,12 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
 // 											printf(" %d (%d,%d)",id,i1,j1);
 										}
 									}
-// 									printf("\n");
-									matrix[i][j]=k+1;
-									MPI_Send(&(matrix[0][0]),size*size,MPI_INT ,get_id, tag, MPI_COMM_WORLD);
-
-									free(matrix[0]);
-									free(matrix);
+// 									printf("\n");*/
+									puzzle[i][j]=k+1;
+									MPI_Send(&(puzzle[0][0]),size*size,MPI_INT ,get_id, tag, MPI_COMM_WORLD);
+									puzzle[i][j]=k1+1;
+									//free(matrix[0]);
+									//free(matrix);
 									break;
 								}
 							}
