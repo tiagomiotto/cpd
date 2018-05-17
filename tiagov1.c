@@ -231,7 +231,7 @@ int main(int argc, char **argv){
 	  /*
 	 printf("matrix for %d\n",id );
 	    printm(matrix,size*size);*/
-
+	free(first_sends);
 	    ini=1;
 	}
 
