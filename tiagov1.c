@@ -202,7 +202,7 @@ int main(int argc, char **argv){
 	    ini=1;
 	}
 
-	if (id % 2 == 0 && id != 0 ) //first recv
+	if (id % 2 == 0 && id != 0 && (id/FIR_DIV)<=divisions) //first recv
 	{
 	    a[0] = 1;
 	    if (id < a[1])a[1] = id;
