@@ -5,7 +5,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <mpi.h>
-#define FIR_DIV 4
+#define FIR_DIV 2
 
 int bactrack_serial(int **puzzle, int size, int** stabl2);
 int row_valid(int** total,int row, int num,int tam);
@@ -33,7 +33,8 @@ int main(int argc, char **argv){
 	MPI_Comm_rank (MPI_COMM_WORLD, &id);
 	MPI_Comm_size (MPI_COMM_WORLD, &p);
 	
-	int *lucky=malloc((p/2)*sizeof(int)); 
+	int *lucky;
+	int *first_sends; 
 	MPI_Request request;
 	MPI_Status status,status2,status3;
 
@@ -85,8 +86,39 @@ int main(int argc, char **argv){
 		size_master=size*size;
 	}
 
-
 	int divisions = p/FIR_DIV-1;
+	if(id==0){
+	lucky=malloc((p/FIR_DIV)*sizeof(int)); 
+	int x=0;
+	for (int aux_id = 0; aux_id < p; ++aux_id) //Choose first one to recv
+	{
+
+	 if(aux_id % FIR_DIV == 0 && aux_id != 0 && (aux_id/FIR_DIV)<=divisions){
+	   lucky[x]=aux_id; 
+	   x++;	
+	 }	
+		
+	}
+
+	//order the receivers in a binary sorting manner
+	first_sends=malloc((p/FIR_DIV)*sizeof(int)); 
+	first_sends[0]=lucky[(divisions/2)];
+	int j=1;
+	for (int i = 1; i < divisions; i++) 
+	{
+		first_sends[j]=lucky[divisions-i];
+		j+=2;
+	}
+	j=0;	
+	for (int i = 2; i < divisions; i+=2)
+	{	
+		first_sends[i]=lucky[i-2-j];
+		j++;
+
+	}
+	free(lucky);
+}
+
 
 	int contador=0;
 	int senders =1;
@@ -111,7 +143,7 @@ int main(int argc, char **argv){
 						{
 							if(is_valid(matrix, k1 + 1, i, j, size) == 1)
 							{
-								int get_id2 = senders * FIR_DIV;
+								int get_id2 = first_sends[senders-1];
 								MPI_Probe(get_id2, tag, MPI_COMM_WORLD, &status);
 								MPI_Recv(a, 2, MPI_INT , get_id2, tag, MPI_COMM_WORLD, &status);
 								printf("enviar copia de %d para %d (%d,%d) com %d\n", id, get_id2, i, j,k+1);
