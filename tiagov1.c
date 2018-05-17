@@ -547,7 +547,11 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
 									if (flag3==0)MPI_Irecv(&a,2,MPI_INT , get_id, tag, MPI_COMM_WORLD, &request);
 									if (a[0]==0){ //printf("recebi 0");
 										printf("tou a  trabalhar e vou sair %d from %d a[0]=%d,size = %d\n",id,get_id,a[0],size); 
-									freematrix(stable,size);return 1;}
+										freematrix(stable,size);
+										free(puzzle[0]);
+										free(puzzle);
+										return 1;
+									}
 									flag3=0;
 									//printf("enviar copia de %d para %d (%d,%d) com %d\n",id,get_id,i,j,k+1);
 									/*
@@ -631,7 +635,9 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
                                     break;
                             }
                         } else {
-							freematrix(stable,size);
+				freematrix(stable,size);
+				free(puzzle[0]);
+				free(puzzle);
                             //printf("This puzzle has no solution!! id=%d\n",id);
                             return -1;
                         }
