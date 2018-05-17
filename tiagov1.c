@@ -447,9 +447,9 @@ int main(int argc, char **argv){
 		printf("matrix of %d of size %d freed\n",id,size );
 	}
 	else {
-		if(size!=size_master)size=size_master;
+		//if(size!=size_master)size=size_master;
 	//	printf("%d,%d\n",size,id );
-		if(size!=0){free(matrix[0]);free(matrix);}
+		//if(size!=0){free(matrix[0]);free(matrix);}
 
 	}
 	MPI_Finalize();
