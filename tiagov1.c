@@ -98,7 +98,7 @@ int main(int argc, char **argv){
 
 		i=0;j=0;
 	    
-	    while(senders <= divisions +1 )
+	    while(senders <= divisions )
 	    {
 			flag=0;
 	        if(matrix[i][j] == 0)
@@ -176,9 +176,10 @@ int main(int argc, char **argv){
 						}
 						if(flag==0)matrix[i][j]=k+1;
 					}	
-					if(senders >= divisions || k1==size-1) break;
+					if(senders > divisions || k1==size-1) break;
 				}
 			}
+			if(senders > divisions )break;
 			if(j == size-1)
 			{
 				i++;
