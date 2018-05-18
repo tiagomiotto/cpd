@@ -5,7 +5,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <mpi.h>
-#define FIR_DIV 2
+#define FIR_DIV 4
 
 int bactrack_serial(int **puzzle, int size, int** stabl2);
 int row_valid(int** total,int row, int num,int tam);
@@ -81,7 +81,7 @@ int main(int argc, char **argv){
 		}
 		
 		printm(matrix,size*size);
-
+		printf("teste %d\n",size*size*3/4);
 		printf("\n");
 		size_master=size*size;
 	}
@@ -231,7 +231,7 @@ int main(int argc, char **argv){
 	  /*
 	 printf("matrix for %d\n",id );
 	    printm(matrix,size*size);*/
-	free(first_sends);
+	//free(first_sends);
 	    ini=1;
 	}
 
@@ -438,6 +438,7 @@ int main(int argc, char **argv){
 		}
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
+	printf("todos a sair\n");
 	if(ifinish==1){
 		if(size!=size_master)size=size_master;
 	//	printf("F %d,%d\n",size,id );
@@ -534,7 +535,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
                     {//printf("flag=%d id=%d from=%d ",flag,id,get_id);
                 			//printf("ola id=%d\n",id);
 						if (flag==0)MPI_Iprobe(get_id, tag, MPI_COMM_WORLD, &flag , &status);
-						if (flag==1){//printf("entrou para enviar\n");
+						if (flag==1 && i<=size*3/4){//printf("entrou para enviar\n");
 						//printf("ola id=%d\n",id);
 							for(k1=k+1;k1<size;k1++){
 								 if(is_valid(puzzle,k1+1, i, j, size)==1){
