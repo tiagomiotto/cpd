@@ -50,14 +50,14 @@ int main(int argc, char **argv){
     
 	double start_serial = omp_get_wtime();
     if(bactrack_serial(matrix, size*size)==-1){
-        printf("Serial took %f second",omp_get_wtime()-start_serial );
+        //printf("Serial took %f second",omp_get_wtime()-start_serial );
         return -1;
 
     }
     double end_serial = omp_get_wtime();
 
-    printf("Serial took %f second",end_serial-start_serial );
-    printf("\n");
+    //printf("Serial took %f second",end_serial-start_serial );
+    //printf("\n");
     return 0;
     
     
@@ -165,7 +165,7 @@ int bactrack_serial(int **puzzle, int size)
                                     break;
                             }
                         } else {
-                            printf("This puzzle has no solution!!\n");
+                            printf("No solution\n");
                             return -1;
                         }
                     }
