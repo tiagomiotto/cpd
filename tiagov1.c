@@ -82,8 +82,8 @@ int main(int argc, char **argv){
 		}
 		
 		printm(matrix,size*size);
-		printf("teste %d\n",size*size*3/4);
-		printf("\n");
+		//printf("teste %d\n",size*size*3/4);
+		//printf("\n");
 		size_master=size*size;
 	}
 
