@@ -14,10 +14,10 @@ int sq_valid(int** total, int row, int collum,int num, int tam );
 int is_valid(int** total, int row, int collum,int num, int tam );
 void  printm(int** matrix,int size);
 void freematrix(int **puzzle, int size);
-int flag=0;
-int flag1=0;
-int flag2=0;
-int flag3=0;
+int flag=0; //Received a message from the neighbourg
+int flag1=0; //Active when someone requested work from me
+int flag2=0; //Received work from neighbourg
+int flag3=0; 
 int size_master=0; //Copia master do size pra nao dar erro em frees a toa
 
 
@@ -48,8 +48,8 @@ int main(int argc, char **argv){
 	}else{
 		pos_id=id+1;
 	}
-// 	
-	("hi mates id=%d\n",id);
+
+	/* Read the file containing the sudoku*/
 	if(id==0){
 		FILE *stream;
 		if(argc != 2){ 
@@ -82,11 +82,15 @@ int main(int argc, char **argv){
 		}
 		
 	
-		size_master=size*size;
+		size_master=size*size; 
 	}
 
-	int divisions = p/FIR_DIV-1;
-	if(id==0){
+	int divisions = p/FIR_DIV-1; //Number of initial divisions
+
+	/*Saves the ones that will receive first and sort them in a binary search fashion*/
+	if(id==0)
+	{
+
 	lucky=malloc((p/FIR_DIV)*sizeof(int)); 
 	int x=0;
 	for (int aux_id = 0; aux_id < p; ++aux_id) //Choose first one to recv
@@ -116,13 +120,14 @@ int main(int argc, char **argv){
 
 	}
 	free(lucky);
-}
+	}
 
 
 	int contador=0;
 	int senders =1;
-	int first_save,first_i,first_j,k;
-	if(id == 0) //master first send
+	int first_save,first_i,first_j,k; //Saves the postion and value master will start at
+	/*Master sends to the first ones to receive*/
+	if(id == 0) 
 	{
 
         size=size*size;
@@ -151,7 +156,7 @@ int main(int argc, char **argv){
 							
 								matrix[i][j] = 0;
 								senders++;
-								if(senders>=divisions){
+								if(senders>=divisions){ //Saves the starting point for the master
 									flag=1;
 									matrix[i][j]=k1+1;
 									first_i=i;
@@ -166,13 +171,13 @@ int main(int argc, char **argv){
 								break;
 							}
 						}
-						if(flag==0)matrix[i][j]=k+1;
+						if(flag==0)matrix[i][j]=k+1; 
 					}	
-					if(senders > divisions || k1==size-1) break;
+					if(senders > divisions || k1==size-1) break;  
 				}
 			}
 			if(senders > divisions )break;
-			if(j == size-1)
+			if(j == size-1) //In case no other possibilities exist for the current cell, go to the next
 			{
 				i++;
 				j = 0;
@@ -186,9 +191,9 @@ int main(int argc, char **argv){
 
 	    ini=1;
 	}
-
+	/*Code for the first nodes who will recv*/
 	if (id % FIR_DIV == 0 && id != 0 && (id/FIR_DIV)<=divisions) 
-//first recv
+
 	{
 	    a[0] = 1;
 	    if (id < a[1])a[1] = id;
@@ -217,24 +222,24 @@ int main(int argc, char **argv){
 	else if(id!=0)ini = 0;
  	MPI_Barrier(MPI_COMM_WORLD);
 	while(fim==0){
-		if (ini == 1)
+
+		if (ini == 1) //Startup code for all the ones that already have a sudoku board
 		{
 		    ini = 0;
 		
-		    if(id != 0){
+		    if(id != 0){ //Not master
 		    	resp = bactrack_serial(matrix, size * size, NULL);
 		    }
 
 		    else
-		    {
+		    { //Master
 		    	size=size*size;
-		        //allocate a matrix
+		        //Create special stable matrix for master so it can backtrack to the first postion
 		        int **stable = (int **)malloc(size * sizeof(int *));
 		        for(i = 0; i < size; i++) stable[i] = (int *)malloc(size * sizeof(int));
 		
 		
-		        //Check what values are lock
-
+		        //Check what values are locked
 		            for(i = 0; i < size; i++)
 		            {
 		                for(j = 0; j < size; j++)
@@ -254,7 +259,7 @@ int main(int argc, char **argv){
 
 		        resp = bactrack_serial(matrix, size * size, stable);
 		    }
-			if(resp==0){
+			if(resp==0){ //In case a solution is found
 				a[0]=0;
 				a[1]=p;
 				
@@ -265,13 +270,16 @@ int main(int argc, char **argv){
 
 				ifinish=1;
 				fim=1;
-			}else if(resp==1){
+			}else if(resp==1){ //In case another node sent me a termination message, propagate and terminate
 				
 				a[0]=0;
 				MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
 				fim=1;
 			}
-		}else{
+		}
+		/*Code for the ones that haven't yet received a sudoku board*/
+		/*They will ask the left neighbourg and wait until the request is fulfiled*/
+		else{ 
 			a[1]=id;
 			MPI_Iprobe(pos_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
 			if(flag1==1){
@@ -296,13 +304,12 @@ int main(int argc, char **argv){
 						flag=1;
 						flag1=0;
 						flag3=1;
-						if(a[1]==id){
+						if(a[1]==id){ //In case the no solution message circles the ring, print no solution and finish
 							flag2=0;
 							fim=1;
 							a[0]=0;
 							
 							MPI_Send(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD);
-							
 							MPI_Probe(pos_id, tag, MPI_COMM_WORLD, &status3);
 							MPI_Recv(&a,2,MPI_INT , pos_id, tag, MPI_COMM_WORLD, &status3);
 							printf("No solution\n");
@@ -320,15 +327,14 @@ int main(int argc, char **argv){
 				}
 				
 			}
-			if (flag1==1){
+			if (flag1==1){//The left neigbourgh sent an termination message
 				
 				a[0]=0;
 				MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
-				
 				fim=1;
 				flag2=0;
 			}
-			if (flag2==1){
+			if (flag2==1){ //The left neighbourg sent work
 				point=id;
 				a[1]=id;
 			
@@ -342,12 +348,12 @@ int main(int argc, char **argv){
 				for ( i=0; i<size; i++)
 					matrix[i] = &(data[size*i]);
 				
-				MPI_Recv(&(matrix[0][0]),size*size,MPI_INT , send_id, tag, MPI_COMM_WORLD, &status); //size*size faz size ficar ao quadrado
+				MPI_Recv(&(matrix[0][0]),size*size,MPI_INT , send_id, tag, MPI_COMM_WORLD, &status); 
 				
 
-				resp=bactrack_serial(matrix, size, NULL);
+				resp=bactrack_serial(matrix, size, NULL); //Start working
 				
-				if(resp==0){
+				if(resp==0){ //In case a solution is found
 					a[0]=0;
 					
 					MPI_Send(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD);
@@ -356,7 +362,7 @@ int main(int argc, char **argv){
 					ifinish=1;
 					size=sqrt(size);
 					fim=1;
-				}else if(resp==1){
+				}else if(resp==1){ //In case another node made me terminate calculation and exit
 					MPI_Iprobe(send_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
 					if(flag1==1)MPI_Recv(&a,2,MPI_INT , send_id, tag, MPI_COMM_WORLD, &status2);
 					a[0]=0;
@@ -373,8 +379,8 @@ int main(int argc, char **argv){
 
 		}
 	}
-	MPI_Barrier(MPI_COMM_WORLD);
-	if(ifinish==1){
+	MPI_Barrier(MPI_COMM_WORLD); //Wait for all the nodes
+	if(ifinish==1){ //If i found the solution, print
 		if(size!=size_master)size=size_master;
 				printm(matrix,size);
 				free(matrix[0]);free(matrix);
@@ -399,7 +405,8 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
 	MPI_Request request;
 	tag=123;
 	
-	if(id==p-1){
+	//Calculate the id of the node's left neighbourg
+	if(id==p-1){  
 		get_id=0;
 	}else{
 		get_id=id+1;
@@ -409,7 +416,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
     for(i = 0; i < size; i++) stable[i] = (int *)malloc(size * sizeof(int));
     
 	
-    //Check what values are lock
+    //The node is not the master, so it doesnt need a new matrix to say which values are locked
     if(stable2==NULL){
     for(i=0;i<size;i++)
     {
@@ -422,7 +429,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
         }
     }
 }
-    else {
+    else { //In case master
    	for(i=0;i<size;i++)
     {
         for(j=0;j<size;j++)
@@ -450,15 +457,15 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
                     //Check for valid values
                     if(is_valid(puzzle,k+1, i, j, size)==1)
                     {
-						if (flag==0)MPI_Iprobe(get_id, tag, MPI_COMM_WORLD, &flag , &status);
-						if (flag==1 && i<=size*3/4){
+						if (flag==0)MPI_Iprobe(get_id, tag, MPI_COMM_WORLD, &flag , &status); //Check if there is a request from the neighbourg
+						if (flag==1 && i<=size*3/4){ //Stop sending after the 3/4*size line, to lower the number of requests
 							for(k1=k+1;k1<size;k1++){
 								 if(is_valid(puzzle,k1+1, i, j, size)==1){
 									flag=0;
 									envia=1;
 									a[0]=1;
-									if (flag3==0)MPI_Irecv(&a,2,MPI_INT , get_id, tag, MPI_COMM_WORLD, &request);
-									if (a[0]==0){ 
+									if (flag3==0)MPI_Irecv(&a,2,MPI_INT , get_id, tag, MPI_COMM_WORLD, &request); 
+									if (a[0]==0){  //Received a termination signal
 										freematrix(stable,size);
 										free(puzzle[0]);
 										free(puzzle);
@@ -467,7 +474,7 @@ int bactrack_serial(int **puzzle, int size, int** stable2)
 									flag3=0;
 								
 									puzzle[i][j]=k+1;
-									MPI_Send(&(puzzle[0][0]),size*size,MPI_INT ,get_id, tag, MPI_COMM_WORLD);
+									MPI_Send(&(puzzle[0][0]),size*size,MPI_INT ,get_id, tag, MPI_COMM_WORLD); //Send worrk
 									puzzle[i][j]=k1+1;
 									break;
 								}
