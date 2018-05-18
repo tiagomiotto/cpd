@@ -341,7 +341,7 @@ int main(int argc, char **argv){
 			if (id<a[1])a[1]=id;
 			point=a[1];
 			MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
-		//	printf("pedido de id= %d para send_id= %d  a[0]=%d a[1]=%d\n",id,send_id,a[0],a[1]);
+			//printf("pedido de id= %d para send_id= %d  a[0]=%d a[1]=%d\n",id,send_id,a[0],a[1]);
 			if(send_id==a[1])printf("aAAAAAAAAAAA\n");
 			while(flag1==0 && flag2==0 && fim==0){
 				MPI_Iprobe(pos_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
