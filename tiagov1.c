@@ -81,7 +81,7 @@ int main(int argc, char **argv){
 			}
 		}
 		
-		printm(matrix,size*size);
+		//printm(matrix,size*size);
 		//printf("teste %d\n",size*size*3/4);
 		//printf("\n");
 		size_master=size*size;
@@ -343,7 +343,7 @@ int main(int argc, char **argv){
 			point=a[1];
 			MPI_Isend(&a, 2, MPI_INT, send_id, tag, MPI_COMM_WORLD,&request);
 			//printf("pedido de id= %d para send_id= %d  a[0]=%d a[1]=%d\n",id,send_id,a[0],a[1]);
-			if(send_id==a[1])//printf("aAAAAAAAAAAA\n");
+			//if(send_id==a[1])//printf("aAAAAAAAAAAA\n");
 			while(flag1==0 && flag2==0 && fim==0){
 				MPI_Iprobe(pos_id, tag, MPI_COMM_WORLD, &flag1 , &status2);
 				MPI_Iprobe(send_id, tag, MPI_COMM_WORLD,&flag2 , &status);
